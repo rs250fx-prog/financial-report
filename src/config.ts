@@ -52,7 +52,7 @@ export const OPERATOR = {
   contactUrl: 'https://fam16.com/contact/',
 } as const;
 
-/** プライバシーポリシーの制定日 */
+/** プライバシーポリシーの最終改定日。改定したら必ず更新する */
 export const PRIVACY_UPDATED = '2026年9月22日';
 
 /**
