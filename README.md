@@ -3,6 +3,11 @@
 金融系デイリーレポートの配信メディア。Astro + Cloudflare Pages。<br>媒体名の表記はローマ字 `TEITEN` を正とし、漢字 `定点` を補助に使う。
 運営元: [Financial and Marketing M16](https://fam16.com/)
 
+## 仕様書
+
+構造・設計判断・運用ルールは [`docs/SPEC.md`](docs/SPEC.md) にまとめてある。
+拡張や修正の前にそちらを読むこと。新規ページのSEO要件も同書の第9章にある。
+
 ## 開発
 
 ```bash
