@@ -11,7 +11,13 @@ interface Props {
   asHeading?: boolean;
 }
 const { date, no, asHeading = false } = Astro.props;
-const Wordmark = asHeading ? 'h1' : 'p';
+
+/**
+ * TOPの h1 は媒体名だけでは主題が伝わらないため、タグラインまで含める。
+ * 隠しテキストではなく、画面に出ている文言をそのまま h1 の内側に入れる。
+ * TOP以外は記事タイトルが h1 になるので、ここは div に落とす。
+ */
+const Heading = asHeading ? 'h1' : 'div';
 ---
 
 <div class="wrap">
@@ -19,12 +25,15 @@ const Wordmark = asHeading ? 'h1' : 'p';
     {no !== undefined && <span class="edge l">No. {no}</span>}
     <span class="edge r">{CADENCE}</span>
     {date && <div class="date">{longDate(date)}</div>}
-    <Wordmark class="wordmark"><a href="/">{SITE_NAME}</a></Wordmark>
-    <div class="tagline">
-      <span class="ja">{SITE_NAME_JA}</span>
-      <span class="sep" aria-hidden="true"></span>
-      {SITE_TAGLINE}
-    </div>
+
+    <Heading class="mast-heading">
+      <span class="wordmark"><a href="/">{SITE_NAME}</a></span>
+      <span class="tagline">
+        <span class="ja">{SITE_NAME_JA}</span>
+        <span class="sep" aria-hidden="true"></span>
+        <span class="tag-text">{SITE_TAGLINE}</span>
+      </span>
+    </Heading>
   </div>
 </div>
 
@@ -41,9 +50,17 @@ const Wordmark = asHeading ? 'h1' : 'p';
     color: var(--muted);
     margin-bottom: 14px;
   }
+  /* h1 と div のどちらで描画されても見た目を変えない。
+     見出しの既定サイズ・太さを打ち消し、中身の span 側で指定する */
+  .mast-heading {
+    display: block;
+    font-size: inherit;
+    font-weight: inherit;
+  }
   /* 短い語なので字間を広く取り、マストヘッドとしての格を出す。
      text-indent は letter-spacing が末尾にも入るぶんの中央ずれを打ち消す */
   .wordmark {
+    display: block;
     font-family: var(--se);
     font-size: clamp(30px, 6.4vw, 60px);
     font-weight: 500;
@@ -58,6 +75,7 @@ const Wordmark = asHeading ? 'h1' : 'p';
     gap: 12px;
     font-family: var(--sa);
     font-size: 11px;
+    font-weight: 400;
     letter-spacing: .2em;
     color: var(--muted);
     margin-top: 16px;

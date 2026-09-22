@@ -79,9 +79,13 @@ const baseGraph: Record<string, unknown>[] = [
     '@id': orgId,
     name: OPERATOR.name,
     url: PUBLISHER_URL,
+    // OG画像は共有用のバナーであってロゴではない。
+    // Organization.logo には正方形の専用画像を使う
     logo: {
       '@type': 'ImageObject',
-      url: new URL('/og-default.png', SITE_URL).href,
+      url: new URL('/logo.png', SITE_URL).href,
+      width: 512,
+      height: 512,
     },
     address: {
       '@type': 'PostalAddress',

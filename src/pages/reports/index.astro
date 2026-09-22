@@ -23,7 +23,7 @@ const monthLabel = (key: string) => {
 
 <Base
   title="デイリーレポート"
-  description="平日朝に配信しているデイリーレポートの全アーカイブ。実質金利・ドル指数・コモディティ・資金フローの観点から、その日の市場に何が起きたのかを毎営業日記録しています。月別・トピック別に過去の判断を辿れます。"
+  description="平日更新のデイリーレポートの全アーカイブ。実質金利・ドル指数・コモディティ・資金フローの観点から、その日の市場に何が起きたのかを毎営業日記録しています。月別・トピック別に過去の判断を辿れます。"
   breadcrumbs={[{ name: 'デイリーレポート' }]}
   quotes={latest?.data.snapshot ?? []}
   mastDate={latest?.data.date}
@@ -33,7 +33,7 @@ const monthLabel = (key: string) => {
     <header class="phead">
       <h1>デイリーレポート</h1>
       <p>
-        平日朝に配信しているレポートの全アーカイブです。日々の判断がどう変化したかを、後から追えるよう時系列で残しています。
+        平日に更新しているレポートの全アーカイブです。日々の判断がどう変化したかを、後から追えるよう時系列で残しています。
       </p>
       <div class="count num">全 {reports.length} 件</div>
     </header>
