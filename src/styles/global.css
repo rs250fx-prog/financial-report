@@ -262,23 +262,30 @@ button { font: inherit; }
 }
 
 /* ── 資金フロー表示 ──────────────────────────────────────
-   本文の「資金　A → B」の行を、remark-flow.mjs が下の構造に
-   変換する。資金の移動はこの媒体の核なので、地の文に埋もれさせず
-   1行のブロックとして独立させる。
+   資金の移動と因果の連鎖はこの媒体の核なので、地の文に埋もれさせず
+   独立したブロックとして見せる。remark-flow.mjs が本文の
 
-   ラベルはアクセント（紺）のベタ塗り。up/down の緑・赤は
-   変化率の符号に予約してあるため、ここには使わない。 */
+     資金　株・短期資金 → 米国債        → ラベル付き（.flow）
+     → 原油続落 → 金利低下 → 株高継続   → 因果（.flow-causal）
+     **原油 → 米国債 → ハイテク株**     → 総括（.flow-primary）
+
+   の3種類を、いずれもこの構造に変換する。
+
+   配色はアクセント（紺）で統一する。up/down の緑・赤は変化率の
+   符号に予約してあるため、フロー表示には使わない。 */
 .prose .flow {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 10px;
   margin-top: 1.6em;
   padding: 14px 18px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-left: 3px solid var(--accent);
   border-radius: 10px;
+}
+.flow-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
   line-height: 1.6;
 }
 .flow-label {
@@ -313,7 +320,49 @@ button { font: inherit; }
   font-size: 15px;
   font-weight: 700;
 }
+/* 連鎖のあとに続く補足。チップと同じ行に混ぜず、下に落とす */
+.prose .flow-note {
+  margin-top: 11px;
+  padding-top: 11px;
+  border-top: 1px dashed var(--line-2);
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--ink-2);
+}
+
+/* 因果の連鎖。ラベルがないぶん、左ボーダーを破線にして資金と区別する */
+.prose .flow-causal { border-left-style: dashed; }
+
+/* 本日の総括。1本だけ強く出す */
+.prose .flow-primary {
+  background: var(--surface-2);
+  border-left-width: 4px;
+}
+.flow-primary .flow-node {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-size: 15.5px;
+  font-weight: 700;
+  padding: 7px 16px;
+}
+
+/* 連鎖ではない「→ 総括：…」のような結論行 */
+.prose .flow-lead {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin-top: 1.3em;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent);
+  color: var(--ink);
+  font-weight: 500;
+}
+.flow-lead .flow-arrow { flex: none; }
+
 @media (max-width: 520px) {
-  .prose .flow { padding: 12px 14px; gap: 7px 8px; }
+  .prose .flow { padding: 12px 14px; }
+  .flow-line { gap: 7px 8px; }
   .flow-node { font-size: 13.5px; padding: 4px 11px; }
+  .flow-primary .flow-node { font-size: 14.5px; padding: 6px 13px; }
 }
