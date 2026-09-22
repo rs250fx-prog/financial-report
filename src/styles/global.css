@@ -29,9 +29,12 @@
   --up: #12734f;
   --down: #b23a30;
 
-  /* 書体。見出しはセリフ、UIと数値はサンセリフに分担 */
-  --se: 'Newsreader', 'Noto Serif JP', Georgia, serif;
-  --sa: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
+  /* 書体。日本語は Zen Kaku Gothic New、欧文と数値は Inter に分担する。
+     明朝は格が出るが、日次で毎日読ませる媒体では可読性が落ちるため
+     ゴシックに統一した。--se は見出し用、--sa は UI・数値用で、
+     和文ファミリーは共通。差は字面ではなくウェイトと字間で付ける。 */
+  --se: 'Inter', 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --sa: 'Inter', 'Zen Kaku Gothic New', system-ui, sans-serif;
 
   --r: 14px;
   --wrap: 1120px;
@@ -204,7 +207,7 @@ button { font: inherit; }
 .prose h2 {
   font-family: var(--se);
   font-size: clamp(21px, 2.6vw, 27px);
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.6;
   color: var(--ink);
   margin-top: 2.4em;
@@ -214,12 +217,12 @@ button { font: inherit; }
 .prose h3 {
   font-family: var(--se);
   font-size: clamp(18px, 2.1vw, 21px);
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.7;
   color: var(--ink);
   margin-top: 2em;
 }
-.prose strong { color: var(--ink); font-weight: 500; }
+.prose strong { color: var(--ink); font-weight: 700; }
 .prose a { color: var(--accent); border-bottom: 1px solid var(--line-2); }
 .prose a:hover { border-color: var(--accent); }
 .prose ul, .prose ol { padding-left: 1.4em; }
