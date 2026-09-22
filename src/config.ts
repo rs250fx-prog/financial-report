@@ -63,7 +63,7 @@ export const OPERATOR = {
  * GA4 は Cookie を使い、データは Google LLC（米国）へ送信される。
  * 有効にする前に、プライバシーポリシーの記述が意図どおりか確認すること。
  */
-export const GA4_MEASUREMENT_ID = '';
+export const GA4_MEASUREMENT_ID = 'G-ZW3TZ5WS10';
 
 /** プライバシーポリシーの最終改定日。改定したら必ず更新する */
 export const PRIVACY_UPDATED = '2026年9月22日';
