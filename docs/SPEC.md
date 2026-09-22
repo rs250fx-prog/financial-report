@@ -359,6 +359,7 @@ python tools/make-og.py
 | 項目 | 状態 |
 |---|---|
 | カスタムドメインの接続 | **apex `teiten.trade` を正とする方針で確定。** Pages に apex を追加し、Page Rules で `www.teiten.trade/*` → `https://teiten.trade/$1` の301を設定する。**本公開済みのため、これが最優先** |
+| Search Console | 登録済み。サイトマップ `https://teiten.trade/sitemap-index.xml`（15URL）を送信。GA4 とのリンクは任意 |
 | メール配信サービス | 未選定。配信できる事業フェーズに入っていないため `SUBSCRIBE_ENABLED = false` とし、購読の導線を一切出していない。再開時は `SUBSCRIBE_ACTION` を埋めてから `SUBSCRIBE_ENABLED` を `true` にする |
 | アクセス解析 | Cloudflare Web Analytics（Cookieなし）と GA4（`G-ZW3TZ5WS10`）の2系統が稼働。どちらもプライバシーポリシーに反映済み。**無効化した場合はポリシーを戻すこと**（GA4 は測定IDを空にすれば記述も自動で消える） |
 | 記事ごとのOG画像 | 全記事が共通画像。号数・日付入りの自動生成は将来課題 |
@@ -373,6 +374,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | Search Console に登録済み。GA4 の本番反映を確認し、全ページ・サイトマップ・RSS・画像の応答を実測（すべて200） |
 | 2026-09-22 | GA4 の測定ID（`G-ZW3TZ5WS10`）を設定。全16ページに計測タグが入り、プライバシーポリシーの GA4 に関する記述も同時に有効化。`dataLayer` と `window.gtag` の動作をブラウザで確認 |
 | 2026-09-22 | GA4 を実装。`GA4_MEASUREMENT_ID` が空のあいだは計測タグを出さず、プライバシーポリシーの GA4 に関する記述（取得する情報・Cookie・オプトアウト・外国にある第三者への提供・改定履歴）も同時に非表示になるようにした。測定IDを入れるだけで計測と告知が揃って有効になる |
 | 2026-09-22 | Cloudflare Web Analytics が有効であることを実測で確認し、プライバシーポリシーを改定。取得する情報・利用目的・Cookieの取り扱い・外国にある第三者への提供に反映し、改定履歴の節を追加。ブラウザのUAで取得しないと beacon が注入されないため、curl の既定UAでは検出できなかった |
