@@ -15,10 +15,18 @@
   --surface: #fdfcf9;   /* カード・ホバー面。地より明るく「浮かせる」 */
   --surface-2: #f1eee6; /* 沈めた面。購読パネル・免責 */
 
-  /* 文字 */
-  --ink: #1c1b18;       /* 純黒を避けた本文色 */
-  --ink-2: #4d4b45;     /* 副文 */
-  --muted: #8a877d;     /* メタ情報 */
+  /* 文字。
+     副文・メタ情報も本文と同じ濃さにしてある。薄いグレーは
+     上質に見えるが読めない。階層は色ではなく、サイズ・字間・
+     余白で付ける方針。
+     少しだけ差を戻したい場合は --ink-2 / --muted だけを
+     #3a3833 程度に上げる。 */
+  --ink: #1c1b18;
+  --ink-2: #1c1b18;
+  --muted: #1c1b18;
+  /* 入力欄のプレースホルダだけは例外。本文と同じ濃さにすると
+     入力済みの値と見分けが付かないため、ここだけ薄くする */
+  --placeholder: #8a877d;
 
   /* 罫線 */
   --line: #e3dfd5;
@@ -48,8 +56,9 @@
     --surface: #171614;
     --surface-2: #1d1b18;
     --ink: #efece5;
-    --ink-2: #aeaba2;
-    --muted: #7a776e;
+    --ink-2: #efece5;
+    --muted: #efece5;
+    --placeholder: #7a776e;
     --line: #282520;
     --line-2: #39352e;
     --accent: #93b0f0;
@@ -65,8 +74,9 @@
   --surface: #171614;
   --surface-2: #1d1b18;
   --ink: #efece5;
-  --ink-2: #aeaba2;
-  --muted: #7a776e;
+  --ink-2: #efece5;
+  --muted: #efece5;
+  --placeholder: #7a776e;
   --line: #282520;
   --line-2: #39352e;
   --accent: #93b0f0;
@@ -244,7 +254,7 @@ button { font: inherit; }
   border-left: 2px solid var(--line-2);
   padding-left: 1.2em;
   color: var(--muted);
-  font-weight: 300;
+  font-weight: 400;
 }
 .prose hr { border: 0; border-top: 1px solid var(--line); margin: 3em 0; }
 .prose code {
