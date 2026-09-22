@@ -288,6 +288,34 @@ def check_weekly(p, seen_week):
     if not (get("bias") or "").strip('"'):
         err(p, "bias（来週のスタンス）が空です")
 
+    # テクニカル・レベル（日次と同じ形式）
+    lv = re.findall(
+        r'\{\s*kind:\s*(resistance|current|support),\s*value:\s*"([^"]*)"', fm)
+    if not lv:
+        warn(p, "levels（テクニカル・レベル）が空です")
+    else:
+        if not any(v for _k, v in lv):
+            err(p, "levels の value が全て空です")
+        if "current" not in [k for k, _v in lv]:
+            warn(p, "levels に現在値（kind: current）がありません")
+
+    # シナリオ。週次の看板要素なので必須扱い
+    sc = re.findall(
+        r'\{\s*kind:\s*(bull|base|bear),\s*trigger:\s*"([^"]*)",'
+        r'\s*chain:\s*"([^"]*)",\s*target:\s*"([^"]*)"', fm)
+    kinds = [k for k, _t, _c, _g in sc]
+    if len(sc) < 3:
+        err(p, f"scenarios が{len(sc)}件です。bull / base / bear の3案を書いてください")
+    else:
+        for want in ("bull", "base", "bear"):
+            if want not in kinds:
+                err(p, f"scenarios に {want} がありません")
+        for k, t, _c, g in sc:
+            if not t:
+                err(p, f"scenarios（{k}）の trigger（発動条件）が空です")
+            if not g:
+                warn(p, f"scenarios（{k}）の target（価格目処）が空です")
+
     if "points:" in fm and "performance:" in fm:
         pts = re.findall(
             r'^\s*-\s*"(.*)"\s*$',
@@ -301,9 +329,26 @@ def check_weekly(p, seen_week):
         warn(p, "tags が空です。トピック索引に載りません")
 
     # ── 本文 ──────────────────────────────
-    for sec in ("## 週の核心テーマ", "## 今週の資金フロー構造", "## 来週の備え"):
-        if sec not in body:
-            warn(p, f"「{sec.strip('# ')}」の節がありません")
+    REQUIRED_W = [
+        "## 週の核心テーマ",
+        "## 今週の主要イベント振り返り",
+        "## 今週の資金フロー構造",
+        "## 来週の備え",
+    ]
+    missing = [x for x in REQUIRED_W if x not in body]
+    if missing:
+        err(p, f"必須の節がありません: {'/ '.join(x.strip('# ') for x in missing)}")
+
+    # 「来週の備え」の中の小見出し
+    for sub in ("### 最重要イベント", "### 地政学シナリオ", "### 日経・円の焦点"):
+        if sub not in body:
+            warn(p, f"「{sub.strip('# ')}」の小見出しがありません")
+
+    if re.search(r'^\s*###\s*[①②③]\s*$', body, re.M):
+        err(p, "主要イベントの見出しが未記入です")
+
+    if "予想レンジ：上限　　円" in body:
+        err(p, "日経の予想レンジが未記入です")
 
     bare = re.findall(r'^\s*https?://\S+\s*$', body, re.M)
     if bare:

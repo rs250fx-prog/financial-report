@@ -172,6 +172,8 @@ docs/SPEC.md              本書
 | `start` / `end` | string | 対象期間。月曜〜金曜が通例 |
 | `performance` | Row[] | 各資産の週次パフォーマンス。`{label, value, change, dir, note}`。**日次の `snapshot` と違い寸評（`note`）を持つ**。1週間を振り返る記事では数字だけでは何が起きたか伝わらないため |
 | `schedule` | Day[] | 来週の主要スケジュール。`{date, items:[{label, key}]}`。`key: true` で★が付く |
+| `levels` | Level[] | テクニカル・レベル（週末時点）。日次と同じ形式 |
+| `scenarios` | Scenario[] | 来週のシナリオ。`{kind, trigger, chain, target}`、`kind` は bull / base / bear。**週次の看板要素**。散文にすると3案の比較ができず、翌週の検証もできない |
 | `bias` | string | 来週のスタンス。記事の結論として独立したブロックに出る |
 
 詳細ページは `start`〜`end` の期間に該当する日次レポートを自動で逆引きして並べる。
@@ -420,6 +422,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | 週次の構造化を日次と同水準に。`levels`（テクニカル・レベル）と `scenarios`（bull/base/bear、発動条件・因果連鎖・価格目処）をスキーマに追加し、`ScenarioCards` で表示。本文の必須節を3→4に増やし、小見出しと日経の予想レンジも検査対象にした |
 | 2026-09-22 | 日次レポートの密度を引き上げ。Crypto と Volatility の節を追加し、金利を米10年・米2年・日本10年・実質金利の多層に。テクニカル・レベル（`levels`）をスキーマに追加し `PriceLadder` で表示。snapshot を8件に。検査で12の必須節・金利の層数・情報元の箇所数を確認するようにした。既存2本も同水準まで加筆 |
 | 2026-09-22 | 削除した記事が `node_modules/.astro` のキャッシュから復活する挙動を確認。キャッシュ削除の手順を `.astro` だけでなく `node_modules/.astro` も含む形に修正 |
 | 2026-09-22 | 週次まとめのフォーマットを整備。スキーマに `performance`（値＋寸評）・`schedule`（来週の予定、★付き）・`bias`（来週のスタンス）を追加し、専用の表示部品を作成。`tools/new-weekly.py`（週番号と期間の自動算出）と週次向けの検査を追加。検査は対象期間内の日付が `schedule` に混入していないかも見る |

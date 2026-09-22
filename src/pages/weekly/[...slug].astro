@@ -4,6 +4,8 @@ import Base from '../../layouts/Base.astro';
 import Subscribe from '../../components/Subscribe.astro';
 import WeeklyPerformance from '../../components/WeeklyPerformance.astro';
 import WeeklySchedule from '../../components/WeeklySchedule.astro';
+import PriceLadder from '../../components/PriceLadder.astro';
+import ScenarioCards from '../../components/ScenarioCards.astro';
 import { allWeekly, listReports, monthDay, longDate, tagSlug, isoJst } from '../../lib/content';
 import { SITE_URL, OPERATOR, PUBLISHER_URL } from '../../config';
 
@@ -107,11 +109,14 @@ const breadcrumbs = [{ name: '週次まとめ', path: '/weekly/' }, { name: d.ti
 
       <WeeklyPerformance rows={d.performance} />
 
+      <PriceLadder levels={d.levels} label="テクニカル・レベル（週末時点）" />
+
       <div class="prose">
         <Content />
       </div>
 
       <div class="prose">
+        <ScenarioCards scenarios={d.scenarios} />
         <WeeklySchedule days={d.schedule} />
       </div>
 

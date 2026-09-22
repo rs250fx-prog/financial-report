@@ -1,0 +1,132 @@
+---
+/**
+ * 来週のシナリオ（Bull / Base / Bear）。
+ *
+ * 散文で書くと3案の比較ができない。発動条件・因果連鎖・価格目処を
+ * 同じ粒度で並べ、どれが起きたかを翌週に検証できる形にする。
+ *
+ * 色で強弱を付けない。緑赤は変化率の符号に予約してあり、
+ * ここで使うと読者が符号として誤読する。区別は罫線と順序で示す。
+ */
+interface Scenario {
+  kind: 'bull' | 'base' | 'bear';
+  trigger: string;
+  chain: string;
+  target: string;
+}
+interface Props {
+  scenarios: Scenario[];
+  label?: string;
+}
+const { scenarios, label = '来週のシナリオ' } = Astro.props;
+
+const KIND = {
+  bull: { name: 'Bull Case', ja: '上振れ' },
+  base: { name: 'Base Case', ja: '基本' },
+  bear: { name: 'Bear Case', ja: '下振れ' },
+} as const;
+
+// 上振れ → 基本 → 下振れ の順に整える
+const ORDER = { bull: 0, base: 1, bear: 2 } as const;
+const sorted = [...scenarios].sort((a, b) => ORDER[a.kind] - ORDER[b.kind]);
+---
+
+{sorted.length > 0 && (
+  <section class="scen" aria-label={label}>
+    <div class="sec-head">
+      <h2>{label}</h2>
+      <span class="spacer"></span>
+      <span class="num">{sorted.length} 案</span>
+    </div>
+    <div class="grid">
+      {sorted.map((s) => (
+        <article class:list={['card', s.kind]}>
+          <header>
+            <span class="name">{KIND[s.kind].name}</span>
+            <span class="ja">{KIND[s.kind].ja}</span>
+          </header>
+          <p class="trigger">{s.trigger}</p>
+          {s.chain && <p class="chain">{s.chain}</p>}
+          {s.target && (
+            <p class="target">
+              <span class="target-h">価格目処</span>
+              <span class="num">{s.target}</span>
+            </p>
+          )}
+        </article>
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .scen { margin: 34px 0 44px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 26px;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--line-2);
+    border-radius: var(--r);
+    padding: 22px 24px;
+  }
+  /* 基本シナリオだけアクセントで示す。上下の区別は順序で伝わる */
+  .card.base { border-top-color: var(--accent); }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+  }
+  .name {
+    font-family: var(--sa);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+  }
+  .ja {
+    font-family: var(--sa);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .trigger {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.75;
+  }
+  .chain {
+    font-size: 13.5px;
+    line-height: 1.9;
+    color: var(--ink-2);
+  }
+  .target {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line-2);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .target-h {
+    font-family: var(--sa);
+    font-size: 10px;
+    letter-spacing: .14em;
+    color: var(--muted);
+  }
+  .target .num {
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+    .card { border-top-width: 2px; }
+  }
+</style>

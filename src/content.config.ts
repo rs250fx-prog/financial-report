@@ -144,6 +144,40 @@ const weekly = defineCollection({
       )
       .default([]),
 
+    /**
+     * テクニカル・レベル。日次と同じ形式。
+     * 週次では「今週どこが効いて、来週どこを見るか」の water mark になる。
+     */
+    levels: z
+      .array(
+        z.object({
+          kind: z.enum(['resistance', 'current', 'support']),
+          value: z.string(),
+          note: z.string().default(''),
+        }),
+      )
+      .default([]),
+
+    /**
+     * 来週のシナリオ。週次の看板要素。
+     *
+     * 散文で書くと3案の比較ができない。発動条件・因果連鎖・価格目処を
+     * 同じ粒度で並べ、どれが起きたかを翌週に検証できる形にする。
+     */
+    scenarios: z
+      .array(
+        z.object({
+          kind: z.enum(['bull', 'base', 'bear']),
+          /** 発動条件。「FOMCがハト派」など */
+          trigger: z.string(),
+          /** 因果連鎖。矢印区切りで書く */
+          chain: z.string().default(''),
+          /** 価格目処 */
+          target: z.string().default(''),
+        }),
+      )
+      .default([]),
+
     /** 来週のスタンス。冒頭に独立したブロックとして出る */
     bias: z.string().default(''),
 

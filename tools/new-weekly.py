@@ -60,6 +60,21 @@ performance:
 # 来週の主要スケジュール。key: true は★付きで強調される
 schedule:
 {schedule}
+# テクニカル・レベル（週末時点）。上から下へ価格順
+# kind は resistance / current / support
+levels:
+  - {{ kind: resistance, value: "", note: "" }}
+  - {{ kind: resistance, value: "", note: "" }}
+  - {{ kind: current,    value: "", note: "" }}
+  - {{ kind: support,    value: "", note: "" }}
+  - {{ kind: support,    value: "", note: "" }}
+
+# 来週のシナリオ。発動条件・因果連鎖・価格目処を同じ粒度で書く
+scenarios:
+  - {{ kind: bull, trigger: "", chain: "", target: "" }}
+  - {{ kind: base, trigger: "", chain: "", target: "" }}
+  - {{ kind: bear, trigger: "", chain: "", target: "" }}
+
 # 来週のスタンス。記事の結論として独立したブロックに出る
 bias: ""
 
@@ -103,17 +118,13 @@ draft: true
 
 ### 最重要イベント
 
+### 国内政治・政策の波乱要因
+
 ### 地政学シナリオ
 
-### ゴールドシナリオ
-
-**Bull Case**：
-
-**Bear Case**：
-
-**Base Case**：
-
 ### 日経・円の焦点
+
+予想レンジ：上限　　円 〜 下限　　円
 '''
 
 
