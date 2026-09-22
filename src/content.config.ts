@@ -46,6 +46,26 @@ const reports = defineCollection({
       .object({ value: z.string(), dir: direction })
       .optional(),
 
+    /**
+     * テクニカル・レベル（価格帯の梯子）。上から下へ並べる。
+     *
+     * 定点観測の中核。同じ水準を毎日追うことで、どこが効いて
+     * どこが抜けたかが時系列で見える。本文の散文ではなく構造化して
+     * 持つのはこのため。
+     *
+     * kind: resistance（上値抵抗）/ current（現在値）/ support（下値支持）
+     */
+    levels: z
+      .array(
+        z.object({
+          kind: z.enum(['resistance', 'current', 'support']),
+          value: z.string(),
+          /** 根拠。「200日移動平均線」「8/6安値」など */
+          note: z.string().default(''),
+        }),
+      )
+      .default([]),
+
     tags: z.array(z.string()).default([]),
 
     // --- SEO ---

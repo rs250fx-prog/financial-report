@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import Snapshot from '../../components/Snapshot.astro';
 import ReportRow from '../../components/ReportRow.astro';
 import Subscribe from '../../components/Subscribe.astro';
+import PriceLadder from '../../components/PriceLadder.astro';
 import { allReports, listReports, dotted, longDate, tagSlug, isoJst } from '../../lib/content';
 import { SITE_URL, SITE_NAME, OPERATOR, PUBLISHER_URL } from '../../config';
 
@@ -117,6 +118,8 @@ const breadcrumbs = [
           </ol>
         </section>
       )}
+
+      <PriceLadder levels={d.levels} />
 
       <div class="prose">
         <Content />

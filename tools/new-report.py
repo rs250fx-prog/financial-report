@@ -45,7 +45,7 @@ def existing():
 
 TEMPLATE = '''---
 no: {no}
-title: ""
+title: "{datedisp}｜"
 deck: ""
 date: "{date}"
 updated: "{updated}"
@@ -57,17 +57,28 @@ points:
   - ""
   - ""
 
-# 6件を目安に。ティッカーにも同じ値が流れる。dir は up / down / flat
+# 8件を目安に。ティッカーにも同じ値が流れる。dir は up / down / flat
 snapshot:
-  - {{ label: "XAU / USD",    value: "", change: "", dir: flat }}
-  - {{ label: "ドル指数 DXY", value: "", change: "", dir: flat }}
-  - {{ label: "米10年金利",   value: "", change: "", dir: flat }}
-  - {{ label: "WTI原油",      value: "", change: "", dir: flat }}
-  - {{ label: "S&P 500",      value: "", change: "", dir: flat }}
-  - {{ label: "日経225",      value: "", change: "", dir: flat }}
+  - {{ label: "XAU / USD",     value: "", change: "", dir: flat }}
+  - {{ label: "ドル指数 DXY",  value: "", change: "", dir: flat }}
+  - {{ label: "米10年金利",    value: "", change: "", dir: flat }}
+  - {{ label: "実質金利 10Y",  value: "", change: "", dir: flat }}
+  - {{ label: "WTI原油",       value: "", change: "", dir: flat }}
+  - {{ label: "S&P 500",       value: "", change: "", dir: flat }}
+  - {{ label: "日経225",       value: "", change: "", dir: flat }}
+  - {{ label: "BTC / USD",     value: "", change: "", dir: flat }}
 
 # 一覧の右端に出す代表値。通常は XAU/USD の変化率
 headline: {{ value: "", dir: flat }}
+
+# テクニカル・レベル。上から下へ価格順に並べる。
+# kind は resistance / current / support
+levels:
+  - {{ kind: resistance, value: "", note: "" }}
+  - {{ kind: resistance, value: "", note: "" }}
+  - {{ kind: current,    value: "", note: "" }}
+  - {{ kind: support,    value: "", note: "" }}
+  - {{ kind: support,    value: "", note: "" }}
 
 tags: []
 # 80〜100字。未記入だと deck が使われるが、必ず書くこと
@@ -81,19 +92,37 @@ draft: true
 
 ## Macro Theme
 
+資金　 →
+
 ---
 
 ## Market Drivers
 
 ### ①
 
+→
+
 ### ②
 
+→
+
 ### ③
+
+→
 
 ---
 
 ## 金利（起点）
+
+米10年債利回り：
+
+米2年債利回り：
+
+日本10年債利回り：
+
+実質金利（TIPS10年）：
+
+→
 
 資金　 →
 
@@ -105,6 +134,12 @@ draft: true
 
 ## ドル
 
+DXY：
+
+USD/JPY：
+
+→
+
 資金　 →
 
 情報元：
@@ -114,6 +149,22 @@ draft: true
 ---
 
 ## 商品
+
+WTI：
+
+Brent：
+
+金：
+
+### Macro Drivers（三軸）
+
+**実質金利**：
+
+**ドル**：
+
+**地政学**：
+
+### 資金フロー結論
 
 資金　 →
 
@@ -125,11 +176,41 @@ draft: true
 
 ## 株
 
+S&P 500：
+
+Nasdaq総合：
+
+ダウ：
+
+**日経225：**
+
+→
+
 資金　 →
 
 情報元：
 
 - []()
+
+---
+
+## Crypto
+
+BTC：
+
+→ 実質金利・Nasdaqとの連動に触れる
+
+資金　 →
+
+---
+
+## Volatility
+
+VIX：
+
+日経VI：
+
+→
 
 ---
 
@@ -149,13 +230,21 @@ draft: true
 
 ### シナリオA：
 
+→
+
 ### シナリオB：
 
+→
+
 ### シナリオC：
+
+→
 
 ---
 
 ## Market Bias（短期）
+
+**中立 / ややリスクオン / リスクオフ のいずれかと、その理由を1行**
 
 最優先の監視項目は3つ。
 
@@ -205,7 +294,10 @@ def main():
             "遡って作成したものです。当日朝に配信したものではありません。\n"
         )
 
-    body = TEMPLATE.format(no=no, date=date, updated=updated, stamp=stamp)
+    datedisp = f"{d.year}/{d.month:02d}/{d.day:02d}（{WD[d.weekday()]}）"
+    body = TEMPLATE.format(
+        no=no, date=date, updated=updated, stamp=stamp, datedisp=datedisp
+    )
     if note:
         body = body.replace(f"{stamp}\n\n---", f"{stamp}\n{note}\n---", 1)
 

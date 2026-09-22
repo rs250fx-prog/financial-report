@@ -108,6 +108,20 @@ def check(p, seen_no):
         if dirv not in ("up", "down", "flat"):
             err(p, f"snapshot「{label}」の dir が不正です: {dirv}")
 
+    levels = re.findall(
+        r'\{\s*kind:\s*(\w+),\s*value:\s*"([^"]*)",\s*note:\s*"([^"]*)"', fm)
+    if levels:
+        kinds = [k for k, _, _ in levels]
+        for k, v, _n in levels:
+            if k not in ("resistance", "current", "support"):
+                err(p, f"levels の kind が不正です: {k}")
+            if not v:
+                err(p, "levels に value が空の項目があります")
+        if "current" not in kinds:
+            warn(p, "levels に現在値（kind: current）がありません")
+    else:
+        warn(p, "levels（テクニカル・レベル）が空です。定点観測の中核なので埋めることを推奨")
+
     hl = re.search(r'headline:\s*\{\s*value:\s*"([^"]*)",\s*dir:\s*(\w+)', fm)
     if not hl:
         warn(p, "headline がありません。一覧の右端が空になります")
@@ -119,8 +133,39 @@ def check(p, seen_no):
         warn(p, "tags が空です。トピック索引に載りません")
 
     # ── 本文 ──────────────────────────────
-    if "## Macro Theme" not in body:
-        warn(p, "Macro Theme の節がありません")
+    # サンプル水準の密度を保つため、必須の節を機械で確認する。
+    # 節が欠けると記事が薄くなり、日によって読める情報が変わってしまう
+    REQUIRED = [
+        "## Macro Theme",
+        "## Market Drivers",
+        "## 金利（起点）",
+        "## ドル",
+        "## 商品",
+        "## 株",
+        "## Crypto",
+        "## Volatility",
+        "## 今日の資金フロー",
+        "## マーケットポジション",
+        "## Next Flow",
+        "## Market Bias",
+    ]
+    missing = [x for x in REQUIRED if x not in body]
+    if missing:
+        err(p, f"必須の節がありません: {'/ '.join(x.strip('# ') for x in missing)}")
+
+    # 金利は多層で見る。1本だけだと実質金利の分解ができない
+    if "## 金利（起点）" in body:
+        rates = sum(
+            1 for k in ("米10年債利回り", "米2年債利回り", "日本10年債利回り", "実質金利")
+            if k in body
+        )
+        if rates < 3:
+            warn(p, f"金利の記載が{rates}種です。米10年・米2年・日本10年・実質金利を目安に")
+
+    # 情報元はセクションごとに付ける
+    sources = body.count("情報元：")
+    if sources < 3:
+        warn(p, f"情報元が{sources}箇所です。金利・ドル・商品・株それぞれに付ける")
 
     # 出典は「素のURL列挙」ではなくリンク付きリストにする。
     # 素のまま書くと1段落に潰れて読めなくなる（実際に起きた）
@@ -138,6 +183,10 @@ def check(p, seen_no):
         err(p, "資金フローの行が未記入です")
     if "- []()" in body:
         err(p, "情報元のリンクが未記入です")
+    if "→ 実質金利・Nasdaqとの連動に触れる" in body:
+        err(p, "Crypto の節が雛形のままです")
+    if "中立 / ややリスクオン / リスクオフ のいずれか" in body:
+        err(p, "Market Bias が雛形のままです")
 
     # 実在しない配信頻度の主張
     for claim in ("週5回", "平日朝7時30分"):
@@ -261,6 +310,10 @@ def check_weekly(p, seen_week):
         err(p, f"素のURLが{len(bare)}件あります。[媒体名（内容・日付）](URL) の形式にしてください")
     if "- []()" in body:
         err(p, "情報元のリンクが未記入です")
+    if "→ 実質金利・Nasdaqとの連動に触れる" in body:
+        err(p, "Crypto の節が雛形のままです")
+    if "中立 / ややリスクオン / リスクオフ のいずれか" in body:
+        err(p, "Market Bias が雛形のままです")
     if re.search(r'^\s*###\s*[①②③]\s*$', body, re.M):
         err(p, "主要イベントの見出しが未記入です")
 

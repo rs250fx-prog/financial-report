@@ -149,6 +149,7 @@ docs/SPEC.md              本書
 | `points` | string[] | 本日の要点。3〜5件。TOPのサイドバーと記事冒頭に `01..` と並ぶ |
 | `snapshot` | Quote[] | マーケット数値。**最上部のティッカーにも同じ値が流れる** |
 | `headline` | {value, dir}? | 一覧の右端に出す代表値（通常は XAU/USD の変化率） |
+| `levels` | Level[] | テクニカル・レベル。`{kind, value, note}`、`kind` は resistance / current / support。**定点観測の中核**。同じ水準を毎日追うことで、どこが効いてどこが抜けたかが時系列で見える |
 | `tags` | string[] | トピック索引に使う |
 | `description` | string | SEO用。未記入なら `deck` が使われる |
 | `keywords` | string[] | 予備 |
@@ -419,6 +420,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | 日次レポートの密度を引き上げ。Crypto と Volatility の節を追加し、金利を米10年・米2年・日本10年・実質金利の多層に。テクニカル・レベル（`levels`）をスキーマに追加し `PriceLadder` で表示。snapshot を8件に。検査で12の必須節・金利の層数・情報元の箇所数を確認するようにした。既存2本も同水準まで加筆 |
 | 2026-09-22 | 削除した記事が `node_modules/.astro` のキャッシュから復活する挙動を確認。キャッシュ削除の手順を `.astro` だけでなく `node_modules/.astro` も含む形に修正 |
 | 2026-09-22 | 週次まとめのフォーマットを整備。スキーマに `performance`（値＋寸評）・`schedule`（来週の予定、★付き）・`bias`（来週のスタンス）を追加し、専用の表示部品を作成。`tools/new-weekly.py`（週番号と期間の自動算出）と週次向けの検査を追加。検査は対象期間内の日付が `schedule` に混入していないかも見る |
 | 2026-09-22 | 日次運用を自動化。`tools/new-report.py`（号数の自動採番と雛形生成）、`tools/check-report.py`（公開前の検査）、`.claude/skills/teiten-report`（データ収集から公開までの手順）を追加。このセッションで実際に起きた失敗（号数の付け間違い、出典が1段落に潰れる、description の未記入、土日の日付）を機械で検出できるようにした |

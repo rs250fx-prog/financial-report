@@ -1,0 +1,119 @@
+---
+/**
+ * テクニカル・レベル（価格帯の梯子）。
+ *
+ * 上値抵抗から下値支持まで、価格の高い順に縦に並べる。現在値の行だけ
+ * 位置が分かるよう強調する。
+ *
+ * 定点観測の中核。同じ水準を毎日追うことで、どこが効いてどこが抜けたかが
+ * 時系列で見える。本文で散文にすると比較できない。
+ */
+interface Level {
+  kind: 'resistance' | 'current' | 'support';
+  value: string;
+  note: string;
+}
+interface Props {
+  levels: Level[];
+  /** 見出し。銘柄が複数になったら「ゴールド」などを指定する */
+  label?: string;
+}
+const { levels, label = 'テクニカル・レベル' } = Astro.props;
+
+const KIND = {
+  resistance: 'レジスタンス',
+  current: '現在値',
+  support: 'サポート',
+} as const;
+---
+
+{levels.length > 0 && (
+  <section class="ladder" aria-label={label}>
+    <div class="ladder-h">{label}</div>
+    <ol>
+      {levels.map((l) => (
+        <li class:list={['row', l.kind]}>
+          <span class="kind">{KIND[l.kind]}</span>
+          <span class="value num">{l.value}</span>
+          {l.note && <span class="note">{l.note}</span>}
+        </li>
+      ))}
+    </ol>
+  </section>
+)}
+
+<style>
+  .ladder {
+    margin: 30px 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 24px 26px;
+  }
+  .ladder-h {
+    font-family: var(--sa);
+    font-size: 10.5px;
+    letter-spacing: .16em;
+    color: var(--muted);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  ol { list-style: none; }
+  .row {
+    display: grid;
+    grid-template-columns: 88px 104px 1fr;
+    gap: 6px 16px;
+    align-items: baseline;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .row:last-child { border-bottom: 0; }
+  .kind {
+    font-family: var(--sa);
+    font-size: 11px;
+    letter-spacing: .06em;
+    color: var(--muted);
+  }
+  .value {
+    font-size: 16px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .note {
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: var(--ink-2);
+  }
+
+  /* 現在値だけは位置が一目で分かるようにする */
+  .row.current {
+    background: var(--surface-2);
+    margin-inline: -26px;
+    padding-inline: 26px;
+    border-block: 1px solid var(--line-2);
+  }
+  .row.current .kind { color: var(--accent); font-weight: 700; }
+  .row.current .value { font-size: 18px; font-weight: 700; }
+
+  /* 抵抗と支持は罫線の色で向きを示す。色は符号用に予約しているので使わない */
+  .row.resistance .kind::before,
+  .row.support .kind::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 1px;
+    background: var(--line-2);
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @media (max-width: 620px) {
+    .ladder { padding: 20px; }
+    .row {
+      grid-template-columns: 82px 1fr;
+      gap: 3px 12px;
+    }
+    .note { grid-column: 1 / -1; font-size: 13px; }
+    .row.current { margin-inline: -20px; padding-inline: 20px; }
+  }
+</style>
