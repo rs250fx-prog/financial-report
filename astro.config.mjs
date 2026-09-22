@@ -4,6 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import fs from 'node:fs';
 import path from 'node:path';
 import { IS_PUBLIC, SITE_URL } from './src/config.ts';
+import { remarkFlow } from './src/remark-flow.mjs';
 
 /**
  * frontmatter で unlisted: true が指定された記事は、サイトマップからも除外する。
@@ -38,4 +39,8 @@ export default defineConfig({
         }),
       ]
     : [],
+  markdown: {
+    // 「資金　A → B」の行を資金フロー表示に変換する
+    remarkPlugins: [remarkFlow],
+  },
 });
