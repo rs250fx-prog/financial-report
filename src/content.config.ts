@@ -86,6 +86,50 @@ const weekly = defineCollection({
     date: z.string().optional(),
     updated: z.string().optional(),
 
+    /**
+     * 各資産の週次パフォーマンス。日次の snapshot と違い、
+     * 値だけでなく寸評（note）を持つ。週次の主役になる要素。
+     */
+    performance: z
+      .array(
+        z.object({
+          label: z.string(),
+          value: z.string(),
+          change: z.string().default(''),
+          dir: direction,
+          /** 一言の解説。「4カ月ぶりに$100の大台突破」など */
+          note: z.string().default(''),
+        }),
+      )
+      .default([]),
+
+    /**
+     * 来週の主要スケジュール。日付ごとに予定を束ねる。
+     * key: true の項目は★付きで強調される。
+     */
+    schedule: z
+      .array(
+        z.object({
+          /** 'YYYY-MM-DD' */
+          date: z.string(),
+          items: z
+            .array(
+              z.object({
+                label: z.string(),
+                key: z.boolean().default(false),
+              }),
+            )
+            .default([]),
+        }),
+      )
+      .default([]),
+
+    /** 来週のスタンス。冒頭に独立したブロックとして出る */
+    bias: z.string().default(''),
+
+    /** 今週の要点。日次の points と同じ扱い */
+    points: z.array(z.string()).default([]),
+
     tags: z.array(z.string()).default([]),
 
     description: z.string().default(''),

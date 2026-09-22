@@ -1,0 +1,89 @@
+---
+import { longDate } from '../lib/content';
+
+/**
+ * 来週の主要スケジュール。
+ * key: true の項目は★付きで強調する。週次記事の実用価値の中心なので、
+ * 本文の散文ではなく構造化して持つ。
+ */
+interface Item {
+  label: string;
+  key: boolean;
+}
+interface Day {
+  date: string;
+  items: Item[];
+}
+interface Props {
+  days: Day[];
+}
+const { days } = Astro.props;
+
+/** '2026年9月16日（水）' → '9/16（水）' */
+const shortDate = (iso: string) => {
+  const full = longDate(iso);
+  const m = full.match(/(\d+)月(\d+)日（(.)）/);
+  return m ? `${m[1]}/${m[2]}（${m[3]}）` : iso;
+};
+---
+
+{days.length > 0 && (
+  <section class="sched" aria-label="来週の主要スケジュール">
+    <div class="sec-head">
+      <h2>来週の主要スケジュール</h2>
+      <span class="spacer"></span>
+      <span class="num">★ は最重要</span>
+    </div>
+    <ol>
+      {days.map((d) => (
+        <li>
+          <span class="day num">{shortDate(d.date)}</span>
+          <ul class="items">
+            {d.items.map((it) => (
+              <li class:list={{ key: it.key }}>
+                {it.key && <span class="star" aria-label="最重要">★</span>}
+                <span>{it.label}</span>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ol>
+  </section>
+)}
+
+<style>
+  .sched { margin: 34px 0 44px; }
+  ol, .items { list-style: none; }
+  ol > li {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 18px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  ol > li:last-child { border-bottom: 0; }
+  .day {
+    font-size: 13px;
+    color: var(--muted);
+    padding-top: .15em;
+  }
+  .items li {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  .items li + li { margin-top: 7px; }
+  .items li.key { font-weight: 500; }
+  .star {
+    flex: none;
+    color: var(--accent);
+    font-size: 12px;
+  }
+  @media (max-width: 620px) {
+    ol > li { grid-template-columns: 1fr; gap: 6px; }
+    .items li { font-size: 14px; }
+  }
+</style>

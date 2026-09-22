@@ -2,6 +2,8 @@
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Subscribe from '../../components/Subscribe.astro';
+import WeeklyPerformance from '../../components/WeeklyPerformance.astro';
+import WeeklySchedule from '../../components/WeeklySchedule.astro';
 import { allWeekly, listReports, monthDay, longDate, tagSlug, isoJst } from '../../lib/content';
 import { SITE_URL, OPERATOR, PUBLISHER_URL } from '../../config';
 
@@ -94,9 +96,31 @@ const breadcrumbs = [{ name: '週次まとめ', path: '/weekly/' }, { name: d.ti
         )}
       </header>
 
+      {d.points.length > 0 && (
+        <section class="points" aria-label="今週の要点">
+          <div class="points-h">今週の要点</div>
+          <ol>
+            {d.points.map((p) => <li>{p}</li>)}
+          </ol>
+        </section>
+      )}
+
+      <WeeklyPerformance rows={d.performance} />
+
       <div class="prose">
         <Content />
       </div>
+
+      <div class="prose">
+        <WeeklySchedule days={d.schedule} />
+      </div>
+
+      {d.bias && (
+        <section class="bias">
+          <div class="bias-h">Market Bias（来週）</div>
+          <p>{d.bias}</p>
+        </section>
+      )}
     </article>
 
     {inWeek.length > 0 && (
@@ -176,7 +200,67 @@ const breadcrumbs = [{ name: '週次まとめ', path: '/weekly/' }, { name: d.ti
     border-top: 1px solid var(--line);
   }
   .tags { margin-top: 14px; }
-  .prose { max-width: 68ch; padding: 34px 0 56px; }
+  .prose { max-width: 68ch; padding: 34px 0 0; }
+
+  /* 今週の要点。日次と同じ見せ方で揃える */
+  .points {
+    margin: 34px 0 0;
+    background: var(--surface-2);
+    border-radius: var(--r);
+    padding: 28px 32px;
+  }
+  .points-h {
+    font-family: var(--sa);
+    font-size: 10.5px;
+    letter-spacing: .16em;
+    color: var(--muted);
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .points ol { list-style: none; counter-reset: pt; }
+  .points li {
+    counter-increment: pt;
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 6px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--ink-2);
+  }
+  .points li:last-child { border-bottom: 0; }
+  .points li::before {
+    content: counter(pt, decimal-leading-zero);
+    font-family: var(--sa);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    color: var(--accent);
+  }
+
+  /* 来週のスタンス。記事の結論なので一番強く出す */
+  .bias {
+    margin: 10px 0 56px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--r);
+    padding: 26px 30px;
+  }
+  .bias-h {
+    font-family: var(--sa);
+    font-size: 10.5px;
+    letter-spacing: .16em;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .bias p {
+    font-size: 16px;
+    line-height: 2;
+    color: var(--ink);
+  }
 
   .sec { padding: 0 0 56px; border-top: 1px solid var(--line); padding-top: 40px; }
   .days { list-style: none; }

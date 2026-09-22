@@ -62,7 +62,21 @@ npm run dev     # http://localhost:4321
 npm run build   # dist/ に出力
 ```
 
-**注意**：`astro.config.mjs` と `src/remark-flow.mjs` を変更した場合、dev サーバーの再起動だけでは反映されない。Astro 5 はコンテンツのレンダリング結果を `.astro/` にキャッシュするため、`rm -rf .astro` が必要。Cloudflare は毎回クリーンな環境でビルドするので、この問題は本番では起きない。
+**注意：コンテンツのキャッシュ**
+
+Astro 5 はコンテンツのレンダリング結果をキャッシュする。置き場は `.astro/` だけでなく **`node_modules/.astro/`** にもあり、次の場合に実態とビルド結果がずれる。
+
+- `astro.config.mjs` や `src/remark-flow.mjs` を変更した → 変換が反映されない
+- **記事ファイルを削除した → 削除したはずのページが生成され続ける**
+
+どちらも次で解消する。
+
+```bash
+rm -rf .astro dist node_modules/.astro node_modules/.vite
+npm run build
+```
+
+`.astro` だけ消しても足りない。実際に、削除した週次記事が `node_modules/.astro` 側のキャッシュから復活した。Cloudflare は毎回クリーンな環境でビルドするので、本番では起きない。
 
 ---
 
@@ -86,8 +100,9 @@ public/
 ├── og-default.png        OG画像（tools/make-og.py で生成）
 └── favicon.svg
 tools/
-├── new-report.py         レポートの雛形を作る（号数を自動採番）
-├── check-report.py       公開前の検査
+├── new-report.py         日次の雛形を作る（号数を自動採番）
+├── new-weekly.py         週次の雛形を作る（週番号と期間を自動算出）
+├── check-report.py       公開前の検査（日次・週次の両方）
 ├── make-og.py            OG画像の生成
 └── make-logo.py          ロゴ画像の生成
 .claude/skills/
@@ -148,7 +163,17 @@ docs/SPEC.md              本書
 
 `src/content/weekly/2026-w38.md` → `/weekly/2026-w38/`
 
-`week` / `year` / `start` / `end` を持つ。詳細ページは `start`〜`end` の期間に該当する日次レポートを自動で逆引きして並べる。
+日次と共通の項目（`title` / `deck` / `points` / `tags` / `description` / `draft` / `unlisted` / `access`）に加えて、週次固有の項目を持つ。
+
+| フィールド | 型 | 役割 |
+|---|---|---|
+| `year` / `week` | number | ISO週番号。ファイル名と一致させる |
+| `start` / `end` | string | 対象期間。月曜〜金曜が通例 |
+| `performance` | Row[] | 各資産の週次パフォーマンス。`{label, value, change, dir, note}`。**日次の `snapshot` と違い寸評（`note`）を持つ**。1週間を振り返る記事では数字だけでは何が起きたか伝わらないため |
+| `schedule` | Day[] | 来週の主要スケジュール。`{date, items:[{label, key}]}`。`key: true` で★が付く |
+| `bias` | string | 来週のスタンス。記事の結論として独立したブロックに出る |
+
+詳細ページは `start`〜`end` の期間に該当する日次レポートを自動で逆引きして並べる。
 
 ### 自動連携
 
@@ -394,6 +419,8 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | 削除した記事が `node_modules/.astro` のキャッシュから復活する挙動を確認。キャッシュ削除の手順を `.astro` だけでなく `node_modules/.astro` も含む形に修正 |
+| 2026-09-22 | 週次まとめのフォーマットを整備。スキーマに `performance`（値＋寸評）・`schedule`（来週の予定、★付き）・`bias`（来週のスタンス）を追加し、専用の表示部品を作成。`tools/new-weekly.py`（週番号と期間の自動算出）と週次向けの検査を追加。検査は対象期間内の日付が `schedule` に混入していないかも見る |
 | 2026-09-22 | 日次運用を自動化。`tools/new-report.py`（号数の自動採番と雛形生成）、`tools/check-report.py`（公開前の検査）、`.claude/skills/teiten-report`（データ収集から公開までの手順）を追加。このセッションで実際に起きた失敗（号数の付け間違い、出典が1段落に潰れる、description の未記入、土日の日付）を機械で検出できるようにした |
 | 2026-09-22 | Search Console に登録済み。GA4 の本番反映を確認し、全ページ・サイトマップ・RSS・画像の応答を実測（すべて200） |
 | 2026-09-22 | GA4 の測定ID（`G-ZW3TZ5WS10`）を設定。全16ページに計測タグが入り、プライバシーポリシーの GA4 に関する記述も同時に有効化。`dataLayer` と `window.gtag` の動作をブラウザで確認 |

@@ -92,7 +92,11 @@ python tools/check-report.py
 npm run build
 ```
 
-`remark-flow.mjs` や `astro.config.mjs` を触った場合のみ `rm -rf .astro` を先に実行する（コンテンツのレンダリング結果がキャッシュされるため）。
+記事を**削除**した場合や、`remark-flow.mjs` / `astro.config.mjs` を触った場合は、先にキャッシュを消す。`.astro` だけでは足りない。
+
+```bash
+rm -rf .astro dist node_modules/.astro node_modules/.vite
+```
 
 ブラウザで見るなら `preview_start` で `m16-daily` を起動する。
 
@@ -117,4 +121,49 @@ push すると Cloudflare Pages が自動でビルド・デプロイする。
 
 ## 週次まとめ
 
-週次は `src/content/weekly/YYYY-wNN.md`。`money-flow-report` の `references/weekly-format.md` に従う。`start`〜`end` の期間に該当する日次レポートは、詳細ページが自動で逆引きして並べる。
+週末に「今週の総括」と「来週の備え」を出す。日次の積み上げを束ね直すもので、**個別の値動きではなく資金の移動として何が起きたか**を整理する。
+
+### 手順
+
+```bash
+python tools/new-weekly.py            # 直近に終わった週
+python tools/new-weekly.py 2026-09-14 # その日を含む週
+```
+
+週番号・対象期間（月〜金）・来週のスケジュール枠は日付から自動で出る。**手で書かない。**その週の日次レポートが何本あるかも表示されるので、材料が足りなければ書くのを見送る判断ができる。
+
+検査は日次と同じコマンドで通る。
+
+```bash
+python tools/check-report.py 2026-w38
+```
+
+### frontmatter の週次固有項目
+
+| 項目 | 役割 |
+|---|---|
+| `year` / `week` | ISO週番号。ファイル名 `YYYY-wNN.md` と一致していること |
+| `start` / `end` | 対象期間。月曜〜金曜が通例 |
+| `points` | 今週の要点。3〜5件 |
+| `performance` | **各資産の週次パフォーマンス。週次の主役。**値・変化率・`dir` に加えて `note`（寸評）を必ず書く。数字だけでは何が起きたか伝わらない |
+| `schedule` | 来週の主要スケジュール。日付ごと。`key: true` で★が付く。**対象期間内の日付を入れない**（来週の予定を書く欄） |
+| `bias` | 来週のスタンス。記事の結論として独立したブロックに出る |
+
+`performance` は8〜9件を目安に、金・原油・米株・日経・ドル指数・ドル円・米金利・VIX をひととおり。
+
+### 本文の構成
+
+```
+## 週の核心テーマ
+## 今週の主要イベント振り返り   （### ①②③ で個別に）
+## 今週の資金フロー構造          （第一の流れ／第二／第三）
+## 来週の備え（M/D〜M/D）
+   ### 最重要イベント
+   ### 地政学シナリオ
+   ### ゴールドシナリオ          （Bull / Bear / Base Case）
+   ### 日経・円の焦点
+```
+
+`start`〜`end` の期間に該当する日次レポートは、詳細ページが自動で逆引きして並べる。本文で個別に列挙しなくてよい。
+
+分析の枠組みは `money-flow-report` の `references/weekly-format.md` にも従う。
