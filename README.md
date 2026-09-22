@@ -1,6 +1,6 @@
-# Financial Report M16
+# TEITEN（定点）
 
-金融系デイリーレポートの配信メディア。Astro + Cloudflare Pages。
+金融系デイリーレポートの配信メディア。Astro + Cloudflare Pages。<br>媒体名の表記はローマ字 `TEITEN` を正とし、漢字 `定点` を補助に使う。
 運営元: [Financial and Marketing M16](https://fam16.com/)
 
 ## 開発

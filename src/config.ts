@@ -16,11 +16,15 @@ export const IS_PUBLIC = false;
  */
 export const SITE_URL = 'https://financial-report-m16.pages.dev';
 
-/** 媒体名 */
-export const SITE_NAME = 'Financial Report M16';
+/**
+ * 媒体名。表記はローマ字を正とし、漢字は補助に使う。
+ * SITE_NAME_JA は日本語検索で拾われるよう <title> と説明文に添える。
+ */
+export const SITE_NAME = 'TEITEN';
+export const SITE_NAME_JA = '定点';
 export const SITE_TAGLINE = '資金の流れで読む、今日の市場';
 export const SITE_DESCRIPTION =
-  '実質金利・ドル指数・コモディティ・資金フローから、その日の市場を読み解くデイリーレポート。平日朝配信。';
+  '実質金利・ドル指数・コモディティ・資金フローから、その日の市場を読み解くデイリーレポート。同じ指標を、同じ形式で、毎営業日。';
 
 /** 発行元 */
 export const PUBLISHER = 'Financial and Marketing M16';

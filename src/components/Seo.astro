@@ -1,5 +1,5 @@
 ---
-import { IS_PUBLIC, SITE_URL, SITE_NAME, SITE_DESCRIPTION } from '../config';
+import { IS_PUBLIC, SITE_URL, SITE_NAME, SITE_NAME_JA, SITE_DESCRIPTION } from '../config';
 
 interface Props {
   title?: string;
@@ -23,7 +23,9 @@ const {
   unlisted = false,
 } = Astro.props;
 
-const pageTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — 資金の流れで読む、今日の市場`;
+// 「TEITEN」だけでは日本語検索に引っかからないため、漢字表記を併記する
+const brand = `${SITE_NAME}（${SITE_NAME_JA}）`;
+const pageTitle = title ? `${title} | ${brand}` : `${brand} — 資金の流れで読む、今日の市場`;
 const canonical = new URL(Astro.url.pathname, SITE_URL).href;
 const ogUrl = new URL(ogImage, SITE_URL).href;
 

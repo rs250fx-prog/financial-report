@@ -1,5 +1,5 @@
 ---
-import { SITE_NAME, SITE_TAGLINE, CADENCE } from '../config';
+import { SITE_NAME, SITE_NAME_JA, SITE_TAGLINE, CADENCE } from '../config';
 import { longDate } from '../lib/content';
 
 interface Props {
@@ -20,7 +20,11 @@ const Wordmark = asHeading ? 'h1' : 'p';
     <span class="edge r">{CADENCE}</span>
     {date && <div class="date">{longDate(date)}</div>}
     <Wordmark class="wordmark"><a href="/">{SITE_NAME}</a></Wordmark>
-    <div class="tagline">{SITE_TAGLINE}</div>
+    <div class="tagline">
+      <span class="ja">{SITE_NAME_JA}</span>
+      <span class="sep" aria-hidden="true"></span>
+      {SITE_TAGLINE}
+    </div>
   </div>
 </div>
 
@@ -37,21 +41,43 @@ const Wordmark = asHeading ? 'h1' : 'p';
     color: var(--muted);
     margin-bottom: 14px;
   }
-  /* 媒体名が長いため、案Dの M16 DAILY より字間を詰めて可変幅を広く取る */
+  /* 短い語なので字間を広く取り、マストヘッドとしての格を出す。
+     text-indent は letter-spacing が末尾にも入るぶんの中央ずれを打ち消す */
   .wordmark {
     font-family: var(--se);
-    font-size: clamp(23px, 4.6vw, 46px);
+    font-size: clamp(30px, 6.4vw, 60px);
     font-weight: 400;
-    letter-spacing: .055em;
-    line-height: 1.12;
-    text-indent: .055em;
+    letter-spacing: .2em;
+    line-height: 1.1;
+    text-indent: .2em;
   }
   .tagline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     font-family: var(--sa);
     font-size: 11px;
-    letter-spacing: .24em;
+    letter-spacing: .2em;
     color: var(--muted);
-    margin-top: 14px;
+    margin-top: 16px;
+  }
+  /* 漢字表記は補助。ローマ字の読みを示しつつ、日本語の語としても残す */
+  .tagline .ja {
+    font-family: var(--se);
+    font-size: 13px;
+    letter-spacing: .14em;
+    color: var(--ink-2);
+  }
+  .tagline .sep {
+    width: 14px;
+    height: 1px;
+    background: var(--line-2);
+    display: block;
+    flex: none;
+  }
+  @media (max-width: 520px) {
+    .tagline { font-size: 10px; letter-spacing: .12em; gap: 9px; }
   }
   .edge {
     position: absolute;
@@ -64,7 +90,7 @@ const Wordmark = asHeading ? 'h1' : 'p';
   .edge.l { left: 24px; }
   .edge.r { right: 24px; }
   /* 両端のメタは、媒体名と衝突する幅で退避させる */
-  @media (max-width: 900px) {
+  @media (max-width: 760px) {
     .edge { display: none; }
   }
 </style>
