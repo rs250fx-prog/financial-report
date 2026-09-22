@@ -103,6 +103,7 @@ docs/SPEC.md              本書
 | 免責事項の文言 | `src/config.ts` の `DISCLAIMER` |
 | グローバルナビの項目 | `src/config.ts` の `NAV` |
 | 事業者情報（名称・代表者・住所・連絡先） | `src/config.ts` の `OPERATOR` |
+| メール購読の導線を出すか | `src/config.ts` の `SUBSCRIBE_ENABLED` |
 | メール購読フォームの送信先 | `src/config.ts` の `SUBSCRIBE_ACTION` |
 | 配色・書体・余白 | `src/styles/global.css` の `:root` |
 | 本文の行間 | `src/styles/global.css` の `--prose-leading` |
@@ -336,7 +337,7 @@ python tools/make-og.py
 | 項目 | 状態 |
 |---|---|
 | カスタムドメインの接続 | **apex `teiten.trade` を正とする方針で確定。** Pages に apex を追加し、Page Rules で `www.teiten.trade/*` → `https://teiten.trade/$1` の301を設定する。**本公開済みのため、これが最優先** |
-| メール配信サービス | 未選定。`SUBSCRIBE_ACTION` が空でフォームは「準備中」表示 |
+| メール配信サービス | 未選定。配信できる事業フェーズに入っていないため `SUBSCRIBE_ENABLED = false` とし、購読の導線を一切出していない。再開時は `SUBSCRIBE_ACTION` を埋めてから `SUBSCRIBE_ENABLED` を `true` にする |
 | アクセス解析 | 未導入。導入前にプライバシーポリシーの改定が必要 |
 | 記事ごとのOG画像 | 全記事が共通画像。号数・日付入りの自動生成は将来課題 |
 | 著者表記 | 現在は組織名のみ。YMYL領域のため個人名での著者表記を検討中 |
@@ -349,6 +350,8 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | メール購読の導線を全面的に非表示に（`SUBSCRIBE_ENABLED`）。配信できないのに「購読する」を見せるのは不誠実で、押しても何も起きない導線はサイト全体の信頼を落とすため。ナビのボタンと購読セクションの両方を出さない |
+| 2026-09-22 | `www.teiten.trade` → apex の301を Page Rules で設定。パス保持を含めて動作を実測で確認 |
 | 2026-09-22 | apex `teiten.trade` と `www.teiten.trade` を Pages のカスタムドメインに追加。apex が 200 を返すことを確認。www → apex の301は Page Rules で設定予定 |
 | 2026-09-22 | **本公開**。`IS_PUBLIC` を `true` にし、`public/_headers` の `X-Robots-Tag` を削除。robots.txt が `Allow: /` に変わり、サイトマップ（15URL）と RSS の出力を開始。noindex が残るのは 404 のみ |
 | 2026-09-22 | SEO再監査で残っていた不備を修正。`article:modified_time` に表示用文字列（"13:13 JST"）を流していたのを ISO8601 に変換（`isoJst()`）。タグ別ページの h1→h3 スキップを解消。404 を恒久 noindex に。TOP と 404 の description 重複を解消し、全ページを80字以上に。本文の外部リンクに `target="_blank" rel="noopener noreferrer"` を自動付与（`rehype-external-links.mjs`） |

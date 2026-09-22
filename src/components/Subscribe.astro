@@ -1,9 +1,11 @@
 ---
-import { SUBSCRIBE_ACTION } from '../config';
+import { SUBSCRIBE_ACTION, SUBSCRIBE_ENABLED } from '../config';
 
+// 配信できる事業フェーズに入るまでは、セクションごと出さない
 const ready = SUBSCRIBE_ACTION !== '';
 ---
 
+{SUBSCRIBE_ENABLED && (
 <section id="subscribe" class="sec">
   <div class="sub">
     <div class="r">SUBSCRIBE</div>
@@ -37,6 +39,7 @@ const ready = SUBSCRIBE_ACTION !== '';
     </p>
   </div>
 </section>
+)}
 
 <style>
   .sec { padding: 60px 0; border-bottom: 1px solid var(--line); }

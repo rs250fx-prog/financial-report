@@ -1,5 +1,5 @@
 ---
-import { NAV } from '../config';
+import { NAV, SUBSCRIBE_ENABLED } from '../config';
 
 const path = Astro.url.pathname;
 const isCurrent = (href: string) =>
@@ -22,7 +22,7 @@ const isCurrent = (href: string) =>
         <button class="icon" id="theme-toggle" type="button" aria-label="配色を切り替える">
           <span aria-hidden="true">◐</span>
         </button>
-        <a class="sub-btn" href="/#subscribe">購読する</a>
+        {SUBSCRIBE_ENABLED && <a class="sub-btn" href="/#subscribe">購読する</a>}
       </div>
     </div>
   </div>
