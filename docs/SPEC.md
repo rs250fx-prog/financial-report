@@ -85,7 +85,13 @@ public/
 ├── _headers              Cloudflare のレスポンスヘッダ
 ├── og-default.png        OG画像（tools/make-og.py で生成）
 └── favicon.svg
-tools/make-og.py          OG画像の生成スクリプト
+tools/
+├── new-report.py         レポートの雛形を作る（号数を自動採番）
+├── check-report.py       公開前の検査
+├── make-og.py            OG画像の生成
+└── make-logo.py          ロゴ画像の生成
+.claude/skills/
+└── teiten-report/        日次運用を通しで行うスキル
 docs/SPEC.md              本書
 ```
 
@@ -329,10 +335,24 @@ GA4 に関する記述は `GA4_MEASUREMENT_ID` の有無に連動させてある
 
 ### レポートを追加する
 
-1. `src/content/reports/_TEMPLATE.md` をコピーし、`YYYY-MM-DD.md` にリネーム
-2. frontmatter を埋める。`snapshot` は6項目を目安に
-3. 本文を `##` 見出しから書く（`#` はタイトルが使う）
-4. `draft: false` にして push
+Claude Code なら `/teiten-report` を呼べば、データ収集から公開まで通しで行う
+（`.claude/skills/teiten-report/SKILL.md`）。手作業の場合は次の順。
+
+```bash
+python tools/new-report.py            # 本日分の雛形。号数は自動で振られる
+python tools/new-report.py 2026-09-24 # 日付指定。土日なら警告が出る
+# …本文を書く…
+python tools/check-report.py          # 公開前の検査
+npm run build
+```
+
+**号数は手で付けない。**`new-report.py` が既存の最大値+1を振る。過去に手で
+付けて番号を振り直す羽目になった。
+
+`check-report.py` が見るもの：号数の重複、日付とファイル名の不一致、
+description の不足（80字未満）、`points` / `snapshot` の空欄、素のURL列挙、
+雛形の埋め忘れ、実態と合わない配信頻度の主張、`draft: true` の出し忘れ。
+エラーがあると終了コード1で落ちる。
 
 ### 遡って過去分を書く場合
 
@@ -374,6 +394,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | 日次運用を自動化。`tools/new-report.py`（号数の自動採番と雛形生成）、`tools/check-report.py`（公開前の検査）、`.claude/skills/teiten-report`（データ収集から公開までの手順）を追加。このセッションで実際に起きた失敗（号数の付け間違い、出典が1段落に潰れる、description の未記入、土日の日付）を機械で検出できるようにした |
 | 2026-09-22 | Search Console に登録済み。GA4 の本番反映を確認し、全ページ・サイトマップ・RSS・画像の応答を実測（すべて200） |
 | 2026-09-22 | GA4 の測定ID（`G-ZW3TZ5WS10`）を設定。全16ページに計測タグが入り、プライバシーポリシーの GA4 に関する記述も同時に有効化。`dataLayer` と `window.gtag` の動作をブラウザで確認 |
 | 2026-09-22 | GA4 を実装。`GA4_MEASUREMENT_ID` が空のあいだは計測タグを出さず、プライバシーポリシーの GA4 に関する記述（取得する情報・Cookie・オプトアウト・外国にある第三者への提供・改定履歴）も同時に非表示になるようにした。測定IDを入れるだけで計測と告知が揃って有効になる |
