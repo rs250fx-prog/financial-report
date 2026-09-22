@@ -10,7 +10,8 @@ const latest = reports[0];
 
 <Base
   title="このメディアについて"
-  description={`${SITE_NAME} の編集方針と運営者情報。何を、どういう基準で書いているかを明示しています。`}
+  description={`${SITE_NAME}（定点）の編集方針と運営者情報。定点観測という名前の由来、書かないこと、レポートの構成、発行元の事業者情報まで、何をどういう基準で書いているかを明示しています。`}
+  breadcrumbs={[{ name: 'このメディアについて' }]}
   quotes={latest?.data.snapshot ?? []}
   mastDate={latest?.data.date}
   mastNo={latest?.data.no}

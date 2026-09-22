@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Subscribe from '../../components/Subscribe.astro';
 import { allWeekly, listReports, monthDay, longDate, tagSlug } from '../../lib/content';
+import { SITE_URL, OPERATOR, PUBLISHER_URL } from '../../config';
 
 export async function getStaticPaths() {
   const entries = await allWeekly();
@@ -23,6 +24,29 @@ const inWeek = reports
   .reverse();
 
 const latest = reports[0];
+
+const pageUrl = new URL(`/weekly/${entry.id}/`, SITE_URL).href;
+const schema = [
+  {
+    '@type': 'NewsArticle',
+    '@id': `${pageUrl}#article`,
+    headline: d.title,
+    description: d.description || d.deck,
+    datePublished: d.date ?? d.end,
+    dateModified: d.date ?? d.end,
+    inLanguage: 'ja',
+    isAccessibleForFree: d.access === 'public',
+    articleSection: '週次まとめ',
+    keywords: d.tags.join(', '),
+    url: pageUrl,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
+    image: new URL(d.ogImage ?? '/og-default.png', SITE_URL).href,
+    author: { '@type': 'Organization', name: OPERATOR.name, url: PUBLISHER_URL },
+    publisher: { '@id': `${SITE_URL}/#organization` },
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+  },
+];
+const breadcrumbs = [{ name: '週次まとめ', path: '/weekly/' }, { name: d.title }];
 ---
 
 <Base
@@ -33,16 +57,26 @@ const latest = reports[0];
   publishedTime={d.date ?? d.end}
   modifiedTime={d.updated}
   unlisted={d.unlisted}
+  schema={schema}
+  breadcrumbs={breadcrumbs}
   quotes={latest?.data.snapshot ?? []}
   mastDate={latest?.data.date}
   mastNo={latest?.data.no}
 >
   <div class="wrap">
     <article>
+      <nav class="crumb" aria-label="パンくず">
+        <a href="/">ホーム</a>
+        <span aria-hidden="true">/</span>
+        <a href="/weekly/">週次まとめ</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">WEEK {d.week}</span>
+      </nav>
+
       <header class="head">
         <div class="rubric">
           <span class="num">WEEK {d.week}</span>
-          <s aria-hidden="true"></s>
+          <span class="rule" aria-hidden="true"></span>
           <span class="num">{monthDay(d.start)} — {monthDay(d.end)}</span>
         </div>
         <h1>{d.title}</h1>
@@ -92,7 +126,17 @@ const latest = reports[0];
 </Base>
 
 <style>
-  article { padding-top: 44px; }
+  article { padding-top: 34px; }
+  .crumb {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    font-family: var(--sa);
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 22px;
+  }
+  .crumb a:hover { color: var(--accent); }
   .rubric {
     display: flex;
     align-items: center;
@@ -103,7 +147,7 @@ const latest = reports[0];
     color: var(--accent);
     margin-bottom: 20px;
   }
-  .rubric s { flex: 1; height: 1px; background: var(--line); display: block; }
+  .rubric .rule { flex: 1; height: 1px; background: var(--line); display: block; }
   h1 {
     font-family: var(--se);
     font-size: clamp(27px, 4vw, 44px);

@@ -11,7 +11,8 @@ const latest = reports[0];
 
 <Base
   title="週次まとめ"
-  description="一週間の資金の流れを、日次レポートの積み上げから振り返るまとめ。翌週の分岐点を整理します。"
+  description="一週間の資金の流れを、日次レポートの積み上げから振り返る週次まとめのアーカイブ。個別の値動きではなく資金の移動として何が起きたのかを整理し、翌週の分岐点を示します。"
+  breadcrumbs={[{ name: '週次まとめ' }]}
   quotes={latest?.data.snapshot ?? []}
   mastDate={latest?.data.date}
   mastNo={latest?.data.no}

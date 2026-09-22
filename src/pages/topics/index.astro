@@ -9,7 +9,8 @@ const latest = reports[0];
 
 <Base
   title="トピック"
-  description="レポートを横断してテーマ別に辿るための索引。実質金利・ドル指数・中央銀行・地政学などの観点から過去の記録を参照できます。"
+  description="レポートを横断してテーマ別に辿るための索引。実質金利・ドル指数・米金利・WTI原油・FOMC・地政学といった観点から、同じ論点が時間とともにどう変化したかを時系列で参照できます。"
+  breadcrumbs={[{ name: 'トピック' }]}
   quotes={latest?.data.snapshot ?? []}
   mastDate={latest?.data.date}
   mastNo={latest?.data.no}

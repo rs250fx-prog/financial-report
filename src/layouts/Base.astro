@@ -21,6 +21,10 @@ interface Props {
   publishedTime?: string;
   modifiedTime?: string;
   unlisted?: boolean;
+  /** 記事ページ用の追加スキーマ（JSON-LD の @graph に連結される） */
+  schema?: Record<string, unknown>[];
+  /** パンくず。ホームは自動で先頭に付くので渡さない */
+  breadcrumbs?: { name: string; path?: string }[];
   /** ティッカーに流す値。通常は最新レポートの snapshot */
   quotes?: Quote[];
   /** マストヘッドに出す日付と号数 */
@@ -38,6 +42,8 @@ const {
   publishedTime,
   modifiedTime,
   unlisted,
+  schema,
+  breadcrumbs,
   quotes = [],
   mastDate,
   mastNo,
@@ -56,6 +62,8 @@ const {
       publishedTime={publishedTime}
       modifiedTime={modifiedTime}
       unlisted={unlisted}
+      schema={schema}
+      breadcrumbs={breadcrumbs}
     />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

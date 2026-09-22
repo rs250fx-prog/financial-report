@@ -36,6 +36,10 @@ export default defineConfig({
         sitemap({
           filter: (page) =>
             !excluded.includes(new URL(page).pathname.replace(/\/$/, '')),
+          // lastmod を出さないと Search Console が更新日を推定できない
+          lastmod: new Date(),
+          changefreq: 'daily',
+          priority: 0.7,
         }),
       ]
     : [],

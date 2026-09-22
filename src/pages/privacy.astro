@@ -25,7 +25,8 @@ const latest = reports[0];
 
 <Base
   title="プライバシーポリシー"
-  description={`${SITE_NAME} における個人情報の取り扱いについて。`}
+  description={`${SITE_NAME}（定点）における個人情報の取り扱い。取得する情報、利用目的、外国にある第三者への提供、開示等の請求手続きを定めています。運営はFinancial and Marketing M16。`}
+  breadcrumbs={[{ name: 'プライバシーポリシー' }]}
   quotes={latest?.data.snapshot ?? []}
 >
   <div class="wrap">

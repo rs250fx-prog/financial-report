@@ -1,5 +1,19 @@
 ---
-import { IS_PUBLIC, SITE_URL, SITE_NAME, SITE_NAME_JA, SITE_DESCRIPTION } from '../config';
+import {
+  IS_PUBLIC,
+  SITE_URL,
+  SITE_NAME,
+  SITE_NAME_JA,
+  SITE_DESCRIPTION,
+  PUBLISHER_URL,
+  OPERATOR,
+} from '../config';
+
+interface Crumb {
+  name: string;
+  /** サイト内の絶対パス。末尾の項目（現在地）は省略する */
+  path?: string;
+}
 
 interface Props {
   title?: string;
@@ -11,6 +25,10 @@ interface Props {
   modifiedTime?: string;
   /** frontmatter の unlisted。true なら noindex */
   unlisted?: boolean;
+  /** 記事ページ用の追加スキーマ。@graph に連結される */
+  schema?: Record<string, unknown>[];
+  /** パンくず。ホームは自動で先頭に付くので渡さない */
+  breadcrumbs?: Crumb[];
 }
 
 const {
@@ -21,6 +39,8 @@ const {
   publishedTime,
   modifiedTime,
   unlisted = false,
+  schema = [],
+  breadcrumbs = [],
 } = Astro.props;
 
 // 「TEITEN」だけでは日本語検索に引っかからないため、漢字表記を併記する
@@ -31,6 +51,72 @@ const ogUrl = new URL(ogImage, SITE_URL).href;
 
 // 本公開前と unlisted 記事は検索エンジンに載せない
 const noindex = !IS_PUBLIC || unlisted;
+
+/**
+ * 構造化データ。@graph に束ねて1本の JSON-LD として出す。
+ * @id で相互参照させることで、ページをまたいで同じ WebSite /
+ * Organization を指していることを検索エンジンに伝える。
+ */
+const siteId = `${SITE_URL}/#website`;
+const orgId = `${SITE_URL}/#organization`;
+
+const baseGraph: Record<string, unknown>[] = [
+  {
+    '@type': 'WebSite',
+    '@id': siteId,
+    url: `${SITE_URL}/`,
+    name: SITE_NAME,
+    alternateName: [SITE_NAME_JA, `${SITE_NAME}（${SITE_NAME_JA}）`],
+    description: SITE_DESCRIPTION,
+    inLanguage: 'ja',
+    publisher: { '@id': orgId },
+  },
+  {
+    '@type': 'Organization',
+    '@id': orgId,
+    name: OPERATOR.name,
+    url: PUBLISHER_URL,
+    logo: {
+      '@type': 'ImageObject',
+      url: new URL('/og-default.png', SITE_URL).href,
+    },
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'JP',
+      addressRegion: '東京都',
+      streetAddress: OPERATOR.address,
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      url: OPERATOR.contactUrl,
+    },
+  },
+];
+
+// パンくずは常にホームから始める
+const crumbGraph =
+  breadcrumbs.length > 0
+    ? [
+        {
+          '@type': 'BreadcrumbList',
+          '@id': `${canonical}#breadcrumb`,
+          itemListElement: [{ name: 'ホーム', path: '/' }, ...breadcrumbs].map(
+            (c, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              name: c.name,
+              ...(c.path ? { item: new URL(c.path, SITE_URL).href } : {}),
+            }),
+          ),
+        },
+      ]
+    : [];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [...baseGraph, ...crumbGraph, ...schema],
+};
 ---
 
 <meta charset="utf-8" />
@@ -47,6 +133,8 @@ const noindex = !IS_PUBLIC || unlisted;
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={ogUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
 <meta property="og:locale" content="ja_JP" />
 {publishedTime && <meta property="article:published_time" content={publishedTime} />}
 {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
@@ -58,3 +146,5 @@ const noindex = !IS_PUBLIC || unlisted;
 
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 {IS_PUBLIC && <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href="/rss.xml" />}
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />

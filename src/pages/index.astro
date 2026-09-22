@@ -35,7 +35,7 @@ const weeklyTop = weekly.slice(0, 3);
             <div class="rubric">
               <span class="dot" aria-hidden="true"></span>
               本日のレポート
-              <s aria-hidden="true"></s>
+              <span class="rule" aria-hidden="true"></span>
               <span class="num">{dotted(latest.data.date)}</span>
             </div>
 
@@ -120,7 +120,7 @@ const weeklyTop = weekly.slice(0, 3);
     color: var(--accent);
     margin-bottom: 20px;
   }
-  .rubric s { flex: 1; height: 1px; background: var(--line); display: block; }
+  .rubric .rule { flex: 1; height: 1px; background: var(--line); display: block; }
   .dot {
     width: 6px; height: 6px;
     flex: none;
