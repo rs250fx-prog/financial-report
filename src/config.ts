@@ -13,12 +13,12 @@ export const IS_PUBLIC = false;
  * 正規URL（末尾スラッシュなし）。canonical・OG画像・サイトマップ・
  * RSS がすべてここを基準にするため、実在するホストを入れること。
  *
- * 現在は Cloudflare Pages の既定ホスト。プロジェクト名 financial-report は
- * 他アカウントに取られていたため、Cloudflare が -bad を自動付与している。
- * 独自ドメインを取得したらここを差し替える。
- * 例: 'https://teiten.jp'
+ * Cloudflare Pages の既定ホストは financial-report-bad.pages.dev。
+ * （プロジェクト名 financial-report は他アカウントが取得済みで、
+ *   Cloudflare が -bad を自動付与した）
+ * 独自ドメイン接続後は、そちらを正規とする。
  */
-export const SITE_URL = 'https://financial-report-bad.pages.dev';
+export const SITE_URL = 'https://teiten.trade';
 
 /**
  * 媒体名。表記はローマ字を正とし、漢字は補助に使う。

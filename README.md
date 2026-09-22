@@ -17,7 +17,7 @@ npm run build   # dist/ に出力
 
 | 項目 | 値 |
 |---|---|
-| Project name | `financial-report-m16` |
+| Project name | `financial-report-bad`（自動生成のまま） |
 | Production branch | `main` |
 | Build command | `npm run build` |
 | Build output directory | `dist` |
@@ -49,6 +49,13 @@ npm run build   # dist/ に出力
 
 TOP のティッカーとスナップショットは、**常に最新号の `snapshot` を参照する**。
 個別の設定は不要。
+
+## ドメイン
+
+本番ドメインは `teiten.trade`。Cloudflare Pages のカスタムドメインとして接続する。
+既定ホスト `financial-report-bad.pages.dev` も並行して生き続けるため、
+本公開後は重複インデックスを避ける必要がある（canonical は `SITE_URL` が指す
+ドメインに固定されるので、通常はそれで足りる）。
 
 ## 公開制御
 
