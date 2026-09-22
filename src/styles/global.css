@@ -1,4 +1,22 @@
 /* ──────────────────────────────────────────────────────────
+   自己ホストのフォント。Google Fonts はレンダリングを
+   ブロックするうえ、日本語が多数のサブセットに分割されるため
+   使わない（理由は :root の書体コメント参照）。
+   ────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  /* 可変フォントなので1ファイルで全ウェイトをまかなう */
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin-var.woff2') format('woff2');
+  /* 欧文と記号のみ。日本語はシステムフォントに任せる */
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+    U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122,
+    U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ──────────────────────────────────────────────────────────
    TEITEN（定点）— デザイントークンと共通スタイル
 
    配色は純白を避けた暖色オフホワイトを基調とし、面と罫線の
@@ -39,12 +57,22 @@
   --up: #12734f;
   --down: #b23a30;
 
-  /* 書体。日本語は Zen Kaku Gothic New、欧文と数値は Inter に分担する。
-     明朝は格が出るが、日次で毎日読ませる媒体では可読性が落ちるため
-     ゴシックに統一した。--se は見出し用、--sa は UI・数値用で、
-     和文ファミリーは共通。差は字面ではなくウェイトと字間で付ける。 */
-  --se: 'Inter', 'Zen Kaku Gothic New', system-ui, sans-serif;
-  --sa: 'Inter', 'Zen Kaku Gothic New', system-ui, sans-serif;
+  /* 書体。欧文と数値は自己ホストの Inter、日本語は各OSのゴシックを使う。
+     明朝は格が出るが日次で読ませる媒体では可読性が落ちるためゴシックに
+     統一している。--se は見出し用、--sa は UI・数値用だが、和文は共通で、
+     差は字面ではなくウェイトと字間で付ける。
+
+     日本語のWebフォントを載せない理由：
+     Zen Kaku Gothic New は Google Fonts 上で unicode-range により
+     363個のサブセットに分割されており、本文が日本語のこのサイトでは
+     その大半が実際にダウンロードされる。CSS だけで86KB、フォント本体が
+     60ファイル以上となり、レンダリングを約5.7秒ブロックしていた。
+     日本語は各OSの標準ゴシックが十分に読みやすいため、転送量ゼロの
+     システムフォントに寄せる。 */
+  --jp: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI',
+        'Yu Gothic', Meiryo, 'Noto Sans JP', sans-serif;
+  --se: 'Inter', var(--jp);
+  --sa: 'Inter', var(--jp);
 
   --r: 14px;
   --wrap: 1120px;
