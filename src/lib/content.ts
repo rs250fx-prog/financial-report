@@ -82,3 +82,26 @@ export async function tagCounts(): Promise<
     .map(([tag, count]) => ({ tag, slug: tagSlug(tag), count }))
     .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
+
+/**
+ * 表示用の updated（"13:13 JST" や "2026-09-22 15:12 JST（遡及作成）"）から
+ * ISO8601（JST）を組み立てる。
+ *
+ * article:modified_time や schema.org の dateModified は機械可読の
+ * 日時を要求する。表示文字列をそのまま流すとパーサーが解釈できない。
+ * 時刻が読み取れない場合は undefined を返し、meta ごと出力しない。
+ * 誤ったフォーマットを出すより、出さないほうがよい。
+ */
+export function isoJst(date: string, updated?: string): string | undefined {
+  if (!updated) return undefined;
+  // "2026-09-22 15:12" のように日付を含む場合はそちらを優先する
+  const full = updated.match(/(\d{4}-\d{2}-\d{2})\D+(\d{1,2}):(\d{2})/);
+  if (full) {
+    return `${full[1]}T${full[2].padStart(2, '0')}:${full[3]}:00+09:00`;
+  }
+  const time = updated.match(/(\d{1,2}):(\d{2})/);
+  if (time) {
+    return `${date}T${time[1].padStart(2, '0')}:${time[2]}:00+09:00`;
+  }
+  return undefined;
+}

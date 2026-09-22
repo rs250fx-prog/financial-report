@@ -7,7 +7,12 @@ const latest = reports[0];
 const recent = reports.slice(0, 3);
 ---
 
-<Base title="ページが見つかりません" quotes={latest?.data.snapshot ?? []}>
+<Base
+  title="ページが見つかりません"
+  description="お探しのページは見つかりませんでした。URLが変更されたか、削除された可能性があります。TEITEN（定点）の最新のデイリーレポート、アーカイブ、トピック索引からお探しください。"
+  noindex
+  quotes={latest?.data.snapshot ?? []}
+>
   <div class="wrap">
     <div class="nf">
       <div class="code num">404</div>

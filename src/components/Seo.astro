@@ -25,6 +25,8 @@ interface Props {
   modifiedTime?: string;
   /** frontmatter の unlisted。true なら noindex */
   unlisted?: boolean;
+  /** 公開後も恒久的に noindex にするページ（404 など） */
+  noindex?: boolean;
   /** 記事ページ用の追加スキーマ。@graph に連結される */
   schema?: Record<string, unknown>[];
   /** パンくず。ホームは自動で先頭に付くので渡さない */
@@ -39,6 +41,7 @@ const {
   publishedTime,
   modifiedTime,
   unlisted = false,
+  noindex: forceNoindex = false,
   schema = [],
   breadcrumbs = [],
 } = Astro.props;
@@ -49,8 +52,8 @@ const pageTitle = title ? `${title} | ${brand}` : `${brand} — 資金の流れ�
 const canonical = new URL(Astro.url.pathname, SITE_URL).href;
 const ogUrl = new URL(ogImage, SITE_URL).href;
 
-// 本公開前と unlisted 記事は検索エンジンに載せない
-const noindex = !IS_PUBLIC || unlisted;
+// 本公開前・unlisted 記事・恒久 noindex ページは検索エンジンに載せない
+const noindex = !IS_PUBLIC || unlisted || forceNoindex;
 
 /**
  * 構造化データ。@graph に束ねて1本の JSON-LD として出す。

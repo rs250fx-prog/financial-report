@@ -2,7 +2,7 @@
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Subscribe from '../../components/Subscribe.astro';
-import { allWeekly, listReports, monthDay, longDate, tagSlug } from '../../lib/content';
+import { allWeekly, listReports, monthDay, longDate, tagSlug, isoJst } from '../../lib/content';
 import { SITE_URL, OPERATOR, PUBLISHER_URL } from '../../config';
 
 export async function getStaticPaths() {
@@ -26,6 +26,7 @@ const inWeek = reports
 const latest = reports[0];
 
 const pageUrl = new URL(`/weekly/${entry.id}/`, SITE_URL).href;
+const modifiedIso = isoJst(d.date ?? d.end, d.updated);
 const schema = [
   {
     '@type': 'NewsArticle',
@@ -33,7 +34,7 @@ const schema = [
     headline: d.title,
     description: d.description || d.deck,
     datePublished: d.date ?? d.end,
-    dateModified: d.date ?? d.end,
+    dateModified: modifiedIso ?? d.date ?? d.end,
     inLanguage: 'ja',
     isAccessibleForFree: d.access === 'public',
     articleSection: '週次まとめ',
@@ -55,7 +56,7 @@ const breadcrumbs = [{ name: '週次まとめ', path: '/weekly/' }, { name: d.ti
   type="article"
   ogImage={d.ogImage}
   publishedTime={d.date ?? d.end}
-  modifiedTime={d.updated}
+  modifiedTime={modifiedIso}
   unlisted={d.unlisted}
   schema={schema}
   breadcrumbs={breadcrumbs}

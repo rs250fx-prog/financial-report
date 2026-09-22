@@ -21,6 +21,8 @@ interface Props {
   publishedTime?: string;
   modifiedTime?: string;
   unlisted?: boolean;
+  /** 公開後も恒久的に noindex にするページ（404 など） */
+  noindex?: boolean;
   /** 記事ページ用の追加スキーマ（JSON-LD の @graph に連結される） */
   schema?: Record<string, unknown>[];
   /** パンくず。ホームは自動で先頭に付くので渡さない */
@@ -42,6 +44,7 @@ const {
   publishedTime,
   modifiedTime,
   unlisted,
+  noindex,
   schema,
   breadcrumbs,
   quotes = [],
@@ -62,6 +65,7 @@ const {
       publishedTime={publishedTime}
       modifiedTime={modifiedTime}
       unlisted={unlisted}
+      noindex={noindex}
       schema={schema}
       breadcrumbs={breadcrumbs}
     />

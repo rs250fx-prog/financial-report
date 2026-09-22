@@ -63,6 +63,11 @@ const breadcrumbs = [{ name: 'トピック', path: '/topics/' }, { name: tag }];
 
     {entries.length > 0 && (
       <section class="sec">
+        <div class="sec-head">
+          <h2>デイリーレポート</h2>
+          <span class="spacer"></span>
+          <span class="num">{entries.length} 件</span>
+        </div>
         {entries.map((entry) => <ReportRow entry={entry} />)}
       </section>
     )}

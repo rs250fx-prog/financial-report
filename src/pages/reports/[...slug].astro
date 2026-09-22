@@ -4,7 +4,7 @@ import Base from '../../layouts/Base.astro';
 import Snapshot from '../../components/Snapshot.astro';
 import ReportRow from '../../components/ReportRow.astro';
 import Subscribe from '../../components/Subscribe.astro';
-import { allReports, listReports, dotted, longDate, tagSlug } from '../../lib/content';
+import { allReports, listReports, dotted, longDate, tagSlug, isoJst } from '../../lib/content';
 import { SITE_URL, SITE_NAME, OPERATOR, PUBLISHER_URL } from '../../config';
 
 export async function getStaticPaths() {
@@ -29,6 +29,9 @@ const alsoRead = visible.filter((e) => e.id !== entry.id).slice(0, 3);
 // 金融情報は YMYL 領域にあたるため、発行元・発行日・出典を
 // 構造化データでも明示する
 const pageUrl = new URL(`/reports/${entry.id}/`, SITE_URL).href;
+// 表示用の updated は "13:13 JST" のような文字列なので、
+// 機械可読の日時はここで組み立てる
+const modifiedIso = isoJst(d.date, d.updated);
 const schema = [
   {
     '@type': 'NewsArticle',
@@ -36,7 +39,7 @@ const schema = [
     headline: d.title,
     description: d.description || d.deck,
     datePublished: d.date,
-    dateModified: d.updated ? d.date : d.date,
+    dateModified: modifiedIso ?? d.date,
     inLanguage: 'ja',
     isAccessibleForFree: d.access === 'public',
     articleSection: '市場レポート',
@@ -66,7 +69,7 @@ const breadcrumbs = [
   type="article"
   ogImage={d.ogImage}
   publishedTime={d.date}
-  modifiedTime={d.updated}
+  modifiedTime={modifiedIso}
   unlisted={d.unlisted}
   schema={schema}
   breadcrumbs={breadcrumbs}

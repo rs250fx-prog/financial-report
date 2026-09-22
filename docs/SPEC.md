@@ -3,6 +3,7 @@
 金融系デイリーレポート配信メディアの技術仕様。拡張・修正時はこの文書を起点にする。
 
 - **最終更新**：2026-09-22
+- **正規ドメイン**：apex（`https://teiten.trade/`）。`www` は301で apex へ寄せる
 - **本番URL**：https://teiten.trade （Cloudflare Pages カスタムドメイン、接続作業中）
 - **既定ホスト**：https://financial-report-bad.pages.dev
 - **リポジトリ**：rs250fx-prog/financial-report（`main` ブランチ、push で自動デプロイ）
@@ -267,6 +268,9 @@ MSN のニュース面の実測値を基準にしている。
 | 見出し階層 | H1 → H2 → H3。スキップしない |
 | パンくず | `Base` の `breadcrumbs` に `[{name, path}]` を渡す。ホームは自動で先頭に付く。画面側のパンくずも別途置く |
 | 構造化データ | `WebSite` と `Organization` は全ページ自動。記事は `Base` の `schema` に `NewsArticle` を渡す |
+| 日時 | `article:modified_time` と `dateModified` は **ISO8601（`+09:00` 付き）**。表示用の `updated` をそのまま渡さない。`lib/content.ts` の `isoJst()` で変換する |
+| 恒久 noindex | 検索結果に出したくないページは `Base` に `noindex` を渡す（404 など）。`IS_PUBLIC` とは別系統 |
+| 外部リンク | 本文（Markdown）は `rehype-external-links.mjs` が `target="_blank"` と `rel="noopener noreferrer"` を自動付与する。`.astro` に直接書いた外部リンクは対象外なので手で付ける |
 | OG画像 | 未指定なら `/og-default.png`。記事固有なら `ogImage` |
 | `lang` / charset | `Base` が `ja` / UTF-8 を出力 |
 
@@ -285,6 +289,8 @@ MSN のニュース面の実測値を基準にしている。
 ### 禁止事項
 
 - **装飾目的で `<s>` を使わない。** 取り消し線の意味を持つ。区切り線は `<span class="rule">`
+- **見出しレベルを飛ばさない。** 一覧を並べるページでは、`ReportRow`（h3）の前に必ず `.sec-head` の h2 を置く
+- **`description` を使い回さない。** 未指定だと `SITE_DESCRIPTION` が入り、ページ間で重複する
 - 画像を追加したら必ず `alt` を書く。装飾画像は `alt=""` と `aria-hidden="true"`
 - 外部リンクに `target="_blank"` を付ける場合は `rel="noopener"` を併記する
 
@@ -329,7 +335,7 @@ python tools/make-og.py
 
 | 項目 | 状態 |
 |---|---|
-| カスタムドメインの接続 | `teiten.trade` 取得済み。Cloudflare Pages への接続とDNS伝播が未完了 |
+| カスタムドメインの接続 | **apex `teiten.trade` を正とする方針で確定。** 現状は `www.teiten.trade` のみが配信されており（200）、apex はDNS未解決。Pages に apex を追加し、www → apex の301を設定する必要がある |
 | 本公開（`IS_PUBLIC`） | `false` のまま。ドメインが配信を始めてから切り替える |
 | メール配信サービス | 未選定。`SUBSCRIBE_ACTION` が空でフォームは「準備中」表示 |
 | アクセス解析 | 未導入。導入前にプライバシーポリシーの改定が必要 |
@@ -344,6 +350,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | SEO再監査で残っていた不備を修正。`article:modified_time` に表示用文字列（"13:13 JST"）を流していたのを ISO8601 に変換（`isoJst()`）。タグ別ページの h1→h3 スキップを解消。404 を恒久 noindex に。TOP と 404 の description 重複を解消し、全ページを80字以上に。本文の外部リンクに `target="_blank" rel="noopener noreferrer"` を自動付与（`rehype-external-links.mjs`） |
 | 2026-09-22 | SEO診断基準にもとづき全ページを修正。JSON-LD（WebSite / Organization / BreadcrumbList / NewsArticle）を追加、OG画像を生成、装飾用 `<s>` を `<span>` に変更、description を拡充、sitemap に lastmod を追加 |
 | 2026-09-22 | プライバシーポリシーを実態に合わせて全面改訂。事業者情報・開示等の請求手続き・外国にある第三者への提供を追加。事業者情報を `config.ts` の `OPERATOR` に集約 |
 | 2026-09-22 | 架空データのサンプル記事4本を削除 |
