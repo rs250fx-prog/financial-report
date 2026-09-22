@@ -1,0 +1,15 @@
+# Cloudflare Pages のレスポンスヘッダ設定。
+#
+# 本公開までは検索エンジンにインデックスさせない。robots.txt と
+# 二重に止める（robots.txt はクロールを止めるだけで、外部リンク
+# 経由のインデックス登録は防げないため）。
+#
+# 公開時の手順:
+#   1. src/config.ts の IS_PUBLIC を true にする
+#   2. 下の X-Robots-Tag の行を削除する
+
+/*
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN

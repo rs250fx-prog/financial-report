@@ -1,0 +1,70 @@
+---
+import Base from '../layouts/Base.astro';
+import { listReports } from '../lib/content';
+
+const reports = await listReports();
+const latest = reports[0];
+const recent = reports.slice(0, 3);
+---
+
+<Base title="ページが見つかりません" quotes={latest?.data.snapshot ?? []}>
+  <div class="wrap">
+    <div class="nf">
+      <div class="code num">404</div>
+      <h1>ページが見つかりません</h1>
+      <p>
+        URLが変更されたか、削除された可能性があります。最新のレポートからお探しください。
+      </p>
+      <a class="pill" href="/">トップへ戻る</a>
+
+      {recent.length > 0 && (
+        <ul class="recent">
+          {recent.map((r) => (
+            <li><a href={`/reports/${r.id}/`}>{r.data.title}</a></li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .nf {
+    padding: 100px 0 120px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .code {
+    font-size: 13px;
+    letter-spacing: .3em;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-family: var(--se);
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 400;
+    margin-bottom: 16px;
+  }
+  .nf p {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--ink-2);
+    max-width: 44ch;
+    margin: 0 auto 30px;
+  }
+  .recent {
+    list-style: none;
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    max-width: 52ch;
+    margin-inline: auto;
+  }
+  .recent li + li { margin-top: 12px; }
+  .recent a {
+    font-family: var(--se);
+    font-size: 15.5px;
+    color: var(--accent);
+  }
+</style>

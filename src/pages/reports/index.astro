@@ -1,0 +1,107 @@
+---
+import Base from '../../layouts/Base.astro';
+import ReportRow from '../../components/ReportRow.astro';
+import Subscribe from '../../components/Subscribe.astro';
+import { listReports, tagCounts } from '../../lib/content';
+
+const reports = await listReports();
+const tags = await tagCounts();
+const latest = reports[0];
+
+// 年月ごとに束ねる。'2026-09' → エントリ配列
+const byMonth = new Map<string, typeof reports>();
+for (const r of reports) {
+  const key = r.data.date.slice(0, 7);
+  byMonth.set(key, [...(byMonth.get(key) ?? []), r]);
+}
+const months = [...byMonth.entries()];
+const monthLabel = (key: string) => {
+  const [y, m] = key.split('-');
+  return `${y}年${Number(m)}月`;
+};
+---
+
+<Base
+  title="デイリーレポート"
+  description="平日朝に配信しているデイリーレポートの全アーカイブ。実質金利・ドル指数・コモディティ・資金フローの観点から、その日の市場を記録しています。"
+  quotes={latest?.data.snapshot ?? []}
+  mastDate={latest?.data.date}
+  mastNo={latest?.data.no}
+>
+  <div class="wrap">
+    <header class="phead">
+      <h1>デイリーレポート</h1>
+      <p>
+        平日朝に配信しているレポートの全アーカイブです。日々の判断がどう変化したかを、後から追えるよう時系列で残しています。
+      </p>
+      <div class="count num">全 {reports.length} 件</div>
+    </header>
+
+    {tags.length > 0 && (
+      <div class="tagbar tags">
+        {tags.map((t) => (
+          <a href={`/topics/${t.slug}/`}>{t.tag} <i>{t.count}</i></a>
+        ))}
+      </div>
+    )}
+
+    {months.map(([key, entries]) => (
+      <section class="sec">
+        <div class="sec-head">
+          <h2>{monthLabel(key)}</h2>
+          <span class="spacer"></span>
+          <span class="num">{entries.length} 件</span>
+        </div>
+        <div>
+          {entries.map((entry) => <ReportRow entry={entry} />)}
+        </div>
+      </section>
+    ))}
+
+    {reports.length === 0 && <p class="empty">レポートはまだ公開されていません。</p>}
+
+    <Subscribe />
+  </div>
+</Base>
+
+<style>
+  .phead { padding: 48px 0 30px; }
+  h1 {
+    font-family: var(--se);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 18px;
+  }
+  .phead p {
+    font-size: 15.5px;
+    line-height: 2;
+    font-weight: 300;
+    color: var(--ink-2);
+    max-width: 58ch;
+  }
+  .count {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 18px;
+  }
+  .tagbar {
+    padding-bottom: 34px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tagbar a { padding: 5px 13px; font-size: 12px; }
+  .tagbar i {
+    font-style: normal;
+    font-variant-numeric: tabular-nums;
+    opacity: .6;
+    margin-left: 4px;
+  }
+  .sec { padding: 46px 0 0; }
+  .sec:last-of-type { padding-bottom: 46px; border-bottom: 1px solid var(--line); }
+  .empty {
+    padding: 80px 0;
+    text-align: center;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line);
+  }
+</style>

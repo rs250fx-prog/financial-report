@@ -1,0 +1,212 @@
+---
+import Base from '../layouts/Base.astro';
+import Snapshot from '../components/Snapshot.astro';
+import ReportRow from '../components/ReportRow.astro';
+import WeeklyCard from '../components/WeeklyCard.astro';
+import Subscribe from '../components/Subscribe.astro';
+import Colophon from '../components/Colophon.astro';
+import { listReports, listWeekly, dotted } from '../lib/content';
+
+const reports = await listReports();
+const weekly = await listWeekly();
+
+// 先頭がヒーロー。以降がアーカイブの日次ログ（TOPでは6件まで）
+const [latest, ...rest] = reports;
+const archive = rest.slice(0, 6);
+const weeklyTop = weekly.slice(0, 3);
+---
+
+<Base
+  isHome
+  quotes={latest?.data.snapshot ?? []}
+  mastDate={latest?.data.date}
+  mastNo={latest?.data.no}
+>
+  <div class="wrap">
+    {latest ? (
+      <>
+        <Snapshot
+          quotes={latest.data.snapshot}
+          note={latest.data.updated ? `更新 ${latest.data.updated}` : undefined}
+        />
+
+        <div class="lead">
+          <div>
+            <div class="rubric">
+              <span class="dot" aria-hidden="true"></span>
+              本日のレポート
+              <s aria-hidden="true"></s>
+              <span class="num">{dotted(latest.data.date)}</span>
+            </div>
+
+            <h2>{latest.data.title}</h2>
+            <p class="deck">{latest.data.deck}</p>
+
+            <div class="actions">
+              <a class="pill" href={`/reports/${latest.id}/`}>全文を読む →</a>
+            </div>
+
+            <div class="by">
+              <span>Financial and Marketing M16</span>
+              {latest.data.updated && <span>更新 {latest.data.updated}</span>}
+              {latest.data.tags.length > 0 && <span>{latest.data.tags.join('・')}</span>}
+            </div>
+          </div>
+
+          {latest.data.points.length > 0 && (
+            <aside aria-label="本日の要点">
+              <div class="brief-h">本日の要点</div>
+              {latest.data.points.map((point, i) => (
+                <div class="brief">
+                  <div class="n">{String(i + 1).padStart(2, '0')}</div>
+                  <p>{point}</p>
+                </div>
+              ))}
+            </aside>
+          )}
+        </div>
+      </>
+    ) : (
+      <p class="empty">レポートはまだ公開されていません。</p>
+    )}
+
+    {archive.length > 0 && (
+      <section class="sec">
+        <div class="sec-head">
+          <h2>アーカイブ — 日次ログ</h2>
+          <span class="spacer"></span>
+          <a href="/reports/">全{reports.length}件を見る →</a>
+        </div>
+        <div class="log">
+          {archive.map((entry) => <ReportRow entry={entry} />)}
+        </div>
+      </section>
+    )}
+
+    {weeklyTop.length > 0 && (
+      <section class="sec">
+        <div class="sec-head">
+          <h2>週次まとめ</h2>
+          <span class="spacer"></span>
+          <a href="/weekly/">バックナンバー →</a>
+        </div>
+        <div class="wk">
+          {weeklyTop.map((entry) => <WeeklyCard entry={entry} />)}
+        </div>
+      </section>
+    )}
+
+    <Subscribe />
+    <Colophon />
+  </div>
+</Base>
+
+<style>
+  /* ── ヒーロー（本文 + 本日の要点の2カラム） ── */
+  .lead {
+    display: grid;
+    grid-template-columns: 1fr 316px;
+    gap: 46px;
+    padding: 52px 0 54px;
+    border-bottom: 1px solid var(--line);
+  }
+  .rubric {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--sa);
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .rubric s { flex: 1; height: 1px; background: var(--line); display: block; }
+  .dot {
+    width: 6px; height: 6px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--up);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 20%, transparent);
+  }
+  .lead h2 {
+    font-family: var(--se);
+    font-size: clamp(27px, 3.9vw, 44px);
+    font-weight: 400;
+    line-height: 1.42;
+    letter-spacing: -.005em;
+    margin-bottom: 22px;
+  }
+  .deck {
+    font-size: 16.5px;
+    line-height: 2.05;
+    font-weight: 300;
+    color: var(--ink-2);
+    max-width: 56ch;
+    margin-bottom: 28px;
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 26px;
+  }
+  .by {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-family: var(--sa);
+    font-size: 11.5px;
+    color: var(--muted);
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* 本日の要点 */
+  .brief-h {
+    font-family: var(--sa);
+    font-size: 10.5px;
+    letter-spacing: .16em;
+    color: var(--muted);
+    padding-bottom: 11px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .brief { padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .brief:last-child { border-bottom: 0; }
+  .brief .n {
+    font-family: var(--sa);
+    font-size: 10px;
+    letter-spacing: .12em;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+  .brief p {
+    font-size: 14.5px;
+    line-height: 1.85;
+    font-weight: 300;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 900px) {
+    .lead { grid-template-columns: 1fr; gap: 34px; padding: 36px 0 40px; }
+  }
+
+  /* ── セクション ── */
+  .sec { padding: 60px 0; border-bottom: 1px solid var(--line); }
+  .wk {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 30px;
+  }
+  @media (max-width: 860px) {
+    .wk { grid-template-columns: 1fr; }
+  }
+
+  .empty {
+    padding: 80px 0;
+    text-align: center;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line);
+  }
+</style>

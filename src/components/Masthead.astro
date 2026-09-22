@@ -1,0 +1,70 @@
+---
+import { SITE_NAME, SITE_TAGLINE, CADENCE } from '../config';
+import { longDate } from '../lib/content';
+
+interface Props {
+  /** 最新レポートの日付 'YYYY-MM-DD'。省略時は日付行を出さない */
+  date?: string;
+  /** 最新レポートの号数 */
+  no?: number;
+  /** TOP以外では h1 をサイト名にしない（記事タイトルが h1 になるため） */
+  asHeading?: boolean;
+}
+const { date, no, asHeading = false } = Astro.props;
+const Wordmark = asHeading ? 'h1' : 'p';
+---
+
+<div class="wrap">
+  <div class="mast">
+    {no !== undefined && <span class="edge l">No. {no}</span>}
+    <span class="edge r">{CADENCE}</span>
+    {date && <div class="date">{longDate(date)}</div>}
+    <Wordmark class="wordmark"><a href="/">{SITE_NAME}</a></Wordmark>
+    <div class="tagline">{SITE_TAGLINE}</div>
+  </div>
+</div>
+
+<style>
+  .mast {
+    position: relative;
+    padding: 30px 0 22px;
+    text-align: center;
+  }
+  .date {
+    font-family: var(--sa);
+    font-size: 11px;
+    letter-spacing: .16em;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  /* 媒体名が長いため、案Dの M16 DAILY より字間を詰めて可変幅を広く取る */
+  .wordmark {
+    font-family: var(--se);
+    font-size: clamp(23px, 4.6vw, 46px);
+    font-weight: 400;
+    letter-spacing: .055em;
+    line-height: 1.12;
+    text-indent: .055em;
+  }
+  .tagline {
+    font-family: var(--sa);
+    font-size: 11px;
+    letter-spacing: .24em;
+    color: var(--muted);
+    margin-top: 14px;
+  }
+  .edge {
+    position: absolute;
+    top: 34px;
+    font-family: var(--sa);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    color: var(--muted);
+  }
+  .edge.l { left: 24px; }
+  .edge.r { right: 24px; }
+  /* 両端のメタは、媒体名と衝突する幅で退避させる */
+  @media (max-width: 900px) {
+    .edge { display: none; }
+  }
+</style>

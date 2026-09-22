@@ -1,0 +1,69 @@
+---
+/**
+ * 最上部のティッカー。
+ * 最新レポートの snapshot をそのまま流す。
+ * CSS の translateX(-50%) でループさせるため、同じ並びを2組出す。
+ * 2組目はスクリーンリーダーから隠す。
+ */
+interface Quote {
+  label: string;
+  value: string;
+  change: string;
+  dir: 'up' | 'down' | 'flat';
+}
+interface Props {
+  quotes: Quote[];
+}
+const { quotes } = Astro.props;
+---
+
+{quotes.length > 0 && (
+  <div class="tick">
+    <div class="tick-in">
+      {[0, 1].map((pass) =>
+        quotes.map((q) => (
+          <span aria-hidden={pass === 1 ? 'true' : undefined}>
+            <b>{q.label}</b>{q.value}<i class={q.dir}>{q.change}</i>
+          </span>
+        )),
+      )}
+    </div>
+  </div>
+)}
+
+<style>
+  .tick {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .tick-in {
+    display: flex;
+    gap: 32px;
+    padding: 9px 24px;
+    white-space: nowrap;
+    width: max-content;
+    font-family: var(--sa);
+    font-size: 11.5px;
+    animation: slide 44s linear infinite;
+  }
+  @keyframes slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .tick b {
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: .06em;
+    margin-right: 7px;
+  }
+  .tick i {
+    font-style: normal;
+    margin-left: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  /* 動きに弱い利用者には流さない。全体は見えないので先頭のみ表示 */
+  @media (prefers-reduced-motion: reduce) {
+    .tick-in { animation: none; }
+  }
+</style>

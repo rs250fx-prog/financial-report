@@ -1,0 +1,235 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Snapshot from '../../components/Snapshot.astro';
+import ReportRow from '../../components/ReportRow.astro';
+import Subscribe from '../../components/Subscribe.astro';
+import { allReports, listReports, dotted, longDate, tagSlug } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const entries = await allReports();
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+
+// 前後の号（新しい順に並んだ一覧上での隣接）
+const visible = await listReports();
+const idx = visible.findIndex((e) => e.id === entry.id);
+const newer = idx > 0 ? visible[idx - 1] : undefined;
+const older = idx >= 0 && idx < visible.length - 1 ? visible[idx + 1] : undefined;
+const alsoRead = visible.filter((e) => e.id !== entry.id).slice(0, 3);
+---
+
+<Base
+  title={d.title}
+  description={d.description || d.deck}
+  type="article"
+  ogImage={d.ogImage}
+  publishedTime={d.date}
+  modifiedTime={d.updated}
+  unlisted={d.unlisted}
+  quotes={d.snapshot}
+  mastDate={d.date}
+  mastNo={d.no}
+>
+  <div class="wrap">
+    <article>
+      <header class="head">
+        <div class="rubric">
+          <span class="num">No. {d.no}</span>
+          <s aria-hidden="true"></s>
+          <span>{longDate(d.date)}</span>
+        </div>
+        <h1>{d.title}</h1>
+        <p class="deck">{d.deck}</p>
+        <div class="by">
+          <span>Financial and Marketing M16</span>
+          <span class="num">{dotted(d.date)} 発行</span>
+          {d.updated && <span>更新 {d.updated}</span>}
+        </div>
+        {d.tags.length > 0 && (
+          <div class="tags">
+            {d.tags.map((t) => <a href={`/topics/${tagSlug(t)}/`}>{t}</a>)}
+          </div>
+        )}
+      </header>
+
+      <Snapshot quotes={d.snapshot} />
+
+      {d.points.length > 0 && (
+        <section class="points" aria-label="本日の要点">
+          <div class="points-h">本日の要点</div>
+          <ol>
+            {d.points.map((p) => <li>{p}</li>)}
+          </ol>
+        </section>
+      )}
+
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+
+    <nav class="pager" aria-label="前後のレポート">
+      {older ? (
+        <a class="pg" href={`/reports/${older.id}/`}>
+          <span class="l">← 前の号</span>
+          <span class="t">{older.data.title}</span>
+        </a>
+      ) : <span></span>}
+      {newer ? (
+        <a class="pg next" href={`/reports/${newer.id}/`}>
+          <span class="l">次の号 →</span>
+          <span class="t">{newer.data.title}</span>
+        </a>
+      ) : <span></span>}
+    </nav>
+
+    {alsoRead.length > 0 && (
+      <section class="sec">
+        <div class="sec-head">
+          <h2>ほかのレポート</h2>
+          <span class="spacer"></span>
+          <a href="/reports/">一覧へ →</a>
+        </div>
+        <div>
+          {alsoRead.map((e) => <ReportRow entry={e} />)}
+        </div>
+      </section>
+    )}
+
+    <Subscribe />
+  </div>
+</Base>
+
+<style>
+  article { padding-top: 44px; }
+  .head { padding-bottom: 8px; }
+  .rubric {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--sa);
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .rubric s { flex: 1; height: 1px; background: var(--line); display: block; }
+  h1 {
+    font-family: var(--se);
+    font-size: clamp(27px, 4vw, 44px);
+    font-weight: 400;
+    line-height: 1.42;
+    letter-spacing: -.005em;
+    margin-bottom: 22px;
+    max-width: 24ch;
+  }
+  .deck {
+    font-size: 16.5px;
+    line-height: 2.05;
+    font-weight: 300;
+    color: var(--ink-2);
+    max-width: 58ch;
+    margin-bottom: 26px;
+  }
+  .by {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-family: var(--sa);
+    font-size: 11.5px;
+    color: var(--muted);
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .tags { margin-top: 14px; }
+
+  /* 本日の要点。本文の前に置き、結論を先に渡す */
+  .points {
+    margin: 34px 0 44px;
+    background: var(--surface-2);
+    border-radius: var(--r);
+    padding: 28px 32px;
+  }
+  .points-h {
+    font-family: var(--sa);
+    font-size: 10.5px;
+    letter-spacing: .16em;
+    color: var(--muted);
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .points ol {
+    list-style: none;
+    counter-reset: pt;
+  }
+  .points li {
+    counter-increment: pt;
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 6px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+    line-height: 1.9;
+    font-weight: 300;
+    color: var(--ink-2);
+  }
+  .points li:last-child { border-bottom: 0; }
+  .points li::before {
+    content: counter(pt, decimal-leading-zero);
+    font-family: var(--sa);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    color: var(--accent);
+  }
+
+  .prose { max-width: 68ch; padding-bottom: 56px; }
+
+  /* 前後の号 */
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 26px 0 56px;
+    border-top: 1px solid var(--line);
+  }
+  .pg {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 22px 24px;
+    transition: border-color .2s;
+  }
+  .pg:hover { border-color: var(--line-2); }
+  .pg.next { text-align: right; }
+  .pg .l {
+    font-family: var(--sa);
+    font-size: 11px;
+    letter-spacing: .1em;
+    color: var(--accent);
+  }
+  .pg .t {
+    font-family: var(--se);
+    font-size: 15.5px;
+    line-height: 1.65;
+  }
+  @media (max-width: 700px) {
+    .pager { grid-template-columns: 1fr; }
+    .pg.next { text-align: left; }
+  }
+
+  .sec { padding: 0 0 60px; border-bottom: 1px solid var(--line); }
+</style>

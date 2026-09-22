@@ -1,0 +1,116 @@
+---
+import Base from '../../layouts/Base.astro';
+import ReportRow from '../../components/ReportRow.astro';
+import Subscribe from '../../components/Subscribe.astro';
+import { listReports, listWeekly, tagSlug, type Report } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const reports = await listReports();
+  const weekly = await listWeekly();
+
+  // スラッグをキーに束ねる。表示用の元のタグ名も一緒に持つ
+  const map = new Map<string, { tag: string; entries: Report[] }>();
+  const bucket = (t: string) => {
+    const slug = tagSlug(t);
+    if (!map.has(slug)) map.set(slug, { tag: t, entries: [] });
+    return map.get(slug)!;
+  };
+
+  for (const r of reports) {
+    for (const t of r.data.tags) bucket(t).entries.push(r);
+  }
+  // 週次にしか付いていないタグでもページが立つよう、箱だけ先に作る
+  for (const w of weekly) {
+    for (const t of w.data.tags) bucket(t);
+  }
+
+  return [...map.entries()].map(([slug, { tag, entries }]) => ({
+    params: { tag: slug },
+    props: {
+      tag,
+      entries,
+      weekly: weekly.filter((w) => w.data.tags.some((t) => tagSlug(t) === slug)),
+    },
+  }));
+}
+
+const { tag, entries, weekly } = Astro.props;
+const all = await listReports();
+const latest = all[0];
+---
+
+<Base
+  title={`${tag} のレポート`}
+  description={`「${tag}」に関連するレポートの一覧。同じ論点が時間とともにどう変化したかを時系列で辿れます。`}
+  quotes={latest?.data.snapshot ?? []}
+  mastDate={latest?.data.date}
+  mastNo={latest?.data.no}
+>
+  <div class="wrap">
+    <header class="phead">
+      <div class="crumb"><a href="/topics/">トピック</a> / {tag}</div>
+      <h1>{tag}</h1>
+      <div class="count num">レポート {entries.length} 件{weekly.length > 0 && ` / 週次 ${weekly.length} 件`}</div>
+    </header>
+
+    {entries.length > 0 && (
+      <section class="sec">
+        {entries.map((entry) => <ReportRow entry={entry} />)}
+      </section>
+    )}
+
+    {weekly.length > 0 && (
+      <section class="sec">
+        <div class="sec-head">
+          <h2>関連する週次まとめ</h2>
+          <span class="spacer"></span>
+          <a href="/weekly/">一覧へ →</a>
+        </div>
+        <ul class="wl">
+          {weekly.map((w) => (
+            <li>
+              <a href={`/weekly/${w.id}/`}>
+                <span class="wk num">WEEK {w.data.week}</span>
+                <span class="t">{w.data.title}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <Subscribe />
+  </div>
+</Base>
+
+<style>
+  .phead { padding: 44px 0 30px; border-bottom: 1px solid var(--line); }
+  .crumb {
+    font-family: var(--sa);
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .crumb a { color: var(--accent); }
+  h1 {
+    font-family: var(--se);
+    font-size: clamp(27px, 4vw, 40px);
+    font-weight: 400;
+    line-height: 1.4;
+  }
+  .count { font-size: 12px; color: var(--muted); margin-top: 14px; }
+  .sec { padding: 34px 0 20px; }
+  .wl { list-style: none; }
+  .wl a {
+    display: grid;
+    grid-template-columns: 86px 1fr;
+    gap: 18px;
+    align-items: baseline;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--line);
+    transition: background .16s, padding .16s;
+  }
+  .wl a:hover { background: var(--surface); padding-inline: 12px; }
+  .wl .wk { font-size: 11.5px; color: var(--accent); letter-spacing: .08em; }
+  .wl .t { font-family: var(--se); font-size: 16px; line-height: 1.6; }
+</style>

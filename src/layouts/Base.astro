@@ -1,0 +1,111 @@
+---
+import '../styles/global.css';
+import Seo from '../components/Seo.astro';
+import Nav from '../components/Nav.astro';
+import Ticker from '../components/Ticker.astro';
+import Masthead from '../components/Masthead.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+
+interface Quote {
+  label: string;
+  value: string;
+  change: string;
+  dir: 'up' | 'down' | 'flat';
+}
+
+interface Props {
+  title?: string;
+  description?: string;
+  type?: 'website' | 'article';
+  ogImage?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  unlisted?: boolean;
+  /** ティッカーに流す値。通常は最新レポートの snapshot */
+  quotes?: Quote[];
+  /** マストヘッドに出す日付と号数 */
+  mastDate?: string;
+  mastNo?: number;
+  /** TOPのみ true。サイト名を h1 にする */
+  isHome?: boolean;
+}
+
+const {
+  title,
+  description,
+  type,
+  ogImage,
+  publishedTime,
+  modifiedTime,
+  unlisted,
+  quotes = [],
+  mastDate,
+  mastNo,
+  isHome = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <Seo
+      title={title}
+      description={description}
+      type={type}
+      ogImage={ogImage}
+      publishedTime={publishedTime}
+      modifiedTime={modifiedTime}
+      unlisted={unlisted}
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500&family=Noto+Sans+JP:wght@300;400;500&family=Noto+Serif+JP:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- 保存済みの配色を描画前に適用する。ここで当てないと、
+         既定配色で一度描かれてからちらつく -->
+    <script is:inline>
+      try {
+        const t = localStorage.getItem('frm16-theme');
+        if (t === 'dark' || t === 'light') {
+          document.documentElement.setAttribute('data-theme', t);
+        }
+      } catch (e) {
+        /* ストレージが使えない環境では OS の設定に従う */
+      }
+    </script>
+  </head>
+
+  <body>
+    <a class="skip" href="#main">本文へスキップ</a>
+
+    <Ticker quotes={quotes} />
+    <Masthead date={mastDate} no={mastNo} asHeading={isHome} />
+    <Nav />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <SiteFooter />
+
+    <style>
+      .skip {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        z-index: 100;
+        background: var(--ink);
+        color: var(--bg);
+        font-family: var(--sa);
+        font-size: 13px;
+        padding: 10px 18px;
+        border-radius: 0 0 8px 0;
+      }
+      .skip:focus { left: 0; }
+    </style>
+  </body>
+</html>

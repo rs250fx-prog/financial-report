@@ -1,0 +1,71 @@
+---
+import Base from '../../layouts/Base.astro';
+import WeeklyCard from '../../components/WeeklyCard.astro';
+import Subscribe from '../../components/Subscribe.astro';
+import { listWeekly, listReports } from '../../lib/content';
+
+const weekly = await listWeekly();
+const reports = await listReports();
+const latest = reports[0];
+---
+
+<Base
+  title="週次まとめ"
+  description="一週間の資金の流れを、日次レポートの積み上げから振り返るまとめ。翌週の分岐点を整理します。"
+  quotes={latest?.data.snapshot ?? []}
+  mastDate={latest?.data.date}
+  mastNo={latest?.data.no}
+>
+  <div class="wrap">
+    <header class="phead">
+      <h1>週次まとめ</h1>
+      <p>
+        日次で追った動きを一週間単位で束ね直し、その週に何が起きたのかと、翌週の分岐点を整理します。
+      </p>
+      <div class="count num">全 {weekly.length} 件</div>
+    </header>
+
+    {weekly.length > 0 ? (
+      <div class="wk">
+        {weekly.map((entry) => <WeeklyCard entry={entry} />)}
+      </div>
+    ) : (
+      <p class="empty">週次まとめはまだ公開されていません。</p>
+    )}
+
+    <Subscribe />
+  </div>
+</Base>
+
+<style>
+  .phead { padding: 48px 0 34px; border-bottom: 1px solid var(--line); }
+  h1 {
+    font-family: var(--se);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 18px;
+  }
+  .phead p {
+    font-size: 15.5px;
+    line-height: 2;
+    font-weight: 300;
+    color: var(--ink-2);
+    max-width: 58ch;
+  }
+  .count { font-size: 12px; color: var(--muted); margin-top: 18px; }
+  .wk {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 44px 0 60px;
+    border-bottom: 1px solid var(--line);
+  }
+  @media (max-width: 860px) { .wk { grid-template-columns: 1fr; } }
+  .empty {
+    padding: 80px 0;
+    text-align: center;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line);
+  }
+</style>

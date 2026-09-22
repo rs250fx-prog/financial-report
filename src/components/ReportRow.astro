@@ -1,0 +1,102 @@
+---
+import type { Report } from '../lib/content';
+import { dotted, weekdayJa } from '../lib/content';
+
+interface Props {
+  entry: Report;
+}
+const { entry } = Astro.props;
+const { date, title, deck, tags, headline, access } = entry.data;
+---
+
+<a class="li" href={`/reports/${entry.id}/`}>
+  <span class="d">
+    {dotted(date)}<em>{weekdayJa(date)}</em>
+  </span>
+
+  <div class="body">
+    <h3>{title}</h3>
+    <p>{deck}</p>
+    {(tags.length > 0 || access === 'members') && (
+      <div class="tags">
+        {access === 'members' && <span class="members">会員限定</span>}
+        {tags.map((t) => <span>{t}</span>)}
+      </div>
+    )}
+  </div>
+
+  {headline && <span class:list={['r', headline.dir]}>{headline.value}</span>}
+</a>
+
+<style>
+  .li {
+    display: grid;
+    grid-template-columns: 96px 1fr 88px;
+    gap: 28px;
+    align-items: baseline;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--line);
+    transition: background .16s, padding .16s;
+  }
+  .li:hover {
+    background: var(--surface);
+    padding-inline: 14px;
+  }
+  .d {
+    font-family: var(--sa);
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .d em {
+    font-style: normal;
+    display: block;
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    margin-top: 3px;
+  }
+  h3 {
+    font-family: var(--se);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.6;
+    margin-bottom: 9px;
+    transition: color .16s;
+  }
+  .li:hover h3 { color: var(--accent); }
+  p {
+    font-size: 14px;
+    line-height: 1.9;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 62ch;
+  }
+  .tags { margin-top: 12px; }
+  .tags .members {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .r {
+    font-family: var(--sa);
+    font-size: 13px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .r.up { color: var(--up); }
+  .r.down { color: var(--down); }
+  .r.flat { color: var(--muted); }
+
+  /* 狭い幅では日付と変化率を1行目に並べ、本文を下へ回す。
+     自動配置に任せると変化率が3行目に落ちるため、明示的に置く */
+  @media (max-width: 780px) {
+    .li {
+      grid-template-columns: 1fr auto;
+      gap: 8px 16px;
+    }
+    .d { grid-area: 1 / 1; }
+    .r { grid-area: 1 / 2; align-self: start; }
+    .body { grid-area: 2 / 1 / 3 / 3; }
+  }
+</style>

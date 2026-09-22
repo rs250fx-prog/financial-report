@@ -1,0 +1,159 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Subscribe from '../../components/Subscribe.astro';
+import { allWeekly, listReports, monthDay, longDate, tagSlug } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const entries = await allWeekly();
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+
+// その週に発行した日次レポート（古い順）を並べ、まとめから辿れるようにする
+const reports = await listReports();
+const inWeek = reports
+  .filter((r) => r.data.date >= d.start && r.data.date <= d.end)
+  .reverse();
+
+const latest = reports[0];
+---
+
+<Base
+  title={d.title}
+  description={d.description || d.deck}
+  type="article"
+  ogImage={d.ogImage}
+  publishedTime={d.date ?? d.end}
+  modifiedTime={d.updated}
+  unlisted={d.unlisted}
+  quotes={latest?.data.snapshot ?? []}
+  mastDate={latest?.data.date}
+  mastNo={latest?.data.no}
+>
+  <div class="wrap">
+    <article>
+      <header class="head">
+        <div class="rubric">
+          <span class="num">WEEK {d.week}</span>
+          <s aria-hidden="true"></s>
+          <span class="num">{monthDay(d.start)} — {monthDay(d.end)}</span>
+        </div>
+        <h1>{d.title}</h1>
+        <p class="deck">{d.deck}</p>
+        <div class="by">
+          <span>Financial and Marketing M16</span>
+          <span>{longDate(d.date ?? d.end)} 発行</span>
+          {d.updated && <span>更新 {d.updated}</span>}
+        </div>
+        {d.tags.length > 0 && (
+          <div class="tags">
+            {d.tags.map((t) => <a href={`/topics/${tagSlug(t)}/`}>{t}</a>)}
+          </div>
+        )}
+      </header>
+
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+
+    {inWeek.length > 0 && (
+      <section class="sec">
+        <div class="sec-head">
+          <h2>この週の日次レポート</h2>
+          <span class="spacer"></span>
+          <a href="/reports/">アーカイブへ →</a>
+        </div>
+        <ol class="days">
+          {inWeek.map((r) => (
+            <li>
+              <a href={`/reports/${r.id}/`}>
+                <span class="d num">{monthDay(r.data.date)}</span>
+                <span class="t">{r.data.title}</span>
+                {r.data.headline && (
+                  <span class:list={['v', r.data.headline.dir]}>{r.data.headline.value}</span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    <Subscribe />
+  </div>
+</Base>
+
+<style>
+  article { padding-top: 44px; }
+  .rubric {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--sa);
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .rubric s { flex: 1; height: 1px; background: var(--line); display: block; }
+  h1 {
+    font-family: var(--se);
+    font-size: clamp(27px, 4vw, 44px);
+    font-weight: 400;
+    line-height: 1.42;
+    margin-bottom: 22px;
+    max-width: 24ch;
+  }
+  .deck {
+    font-size: 16.5px;
+    line-height: 2.05;
+    font-weight: 300;
+    color: var(--ink-2);
+    max-width: 58ch;
+    margin-bottom: 26px;
+  }
+  .by {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-family: var(--sa);
+    font-size: 11.5px;
+    color: var(--muted);
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .tags { margin-top: 14px; }
+  .prose { max-width: 68ch; padding: 34px 0 56px; }
+
+  .sec { padding: 0 0 56px; border-top: 1px solid var(--line); padding-top: 40px; }
+  .days { list-style: none; }
+  .days a {
+    display: grid;
+    grid-template-columns: 62px 1fr auto;
+    gap: 20px;
+    align-items: baseline;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--line);
+    transition: background .16s, padding .16s;
+  }
+  .days a:hover { background: var(--surface); padding-inline: 12px; }
+  .days .d { font-size: 12px; color: var(--muted); }
+  .days .t { font-family: var(--se); font-size: 16px; line-height: 1.6; }
+  .days .v {
+    font-family: var(--sa);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .days .v.up { color: var(--up); }
+  .days .v.down { color: var(--down); }
+  .days .v.flat { color: var(--muted); }
+</style>

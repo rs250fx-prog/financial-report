@@ -1,0 +1,80 @@
+---
+import Base from '../../layouts/Base.astro';
+import { tagCounts, listReports } from '../../lib/content';
+
+const tags = await tagCounts();
+const reports = await listReports();
+const latest = reports[0];
+---
+
+<Base
+  title="トピック"
+  description="レポートを横断してテーマ別に辿るための索引。実質金利・ドル指数・中央銀行・地政学などの観点から過去の記録を参照できます。"
+  quotes={latest?.data.snapshot ?? []}
+  mastDate={latest?.data.date}
+  mastNo={latest?.data.no}
+>
+  <div class="wrap">
+    <header class="phead">
+      <h1>トピック</h1>
+      <p>
+        テーマ別の索引です。同じ論点が時間とともにどう変わったかを追うための入口として使ってください。
+      </p>
+    </header>
+
+    {tags.length > 0 ? (
+      <ul class="grid">
+        {tags.map((t) => (
+          <li>
+            <a href={`/topics/${t.slug}/`}>
+              <span class="t">{t.tag}</span>
+              <span class="c num">{t.count}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="empty">トピックはまだありません。</p>
+    )}
+  </div>
+</Base>
+
+<style>
+  .phead { padding: 48px 0 34px; border-bottom: 1px solid var(--line); }
+  h1 {
+    font-family: var(--se);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 18px;
+  }
+  .phead p {
+    font-size: 15.5px;
+    line-height: 2;
+    font-weight: 300;
+    color: var(--ink-2);
+    max-width: 58ch;
+  }
+  .grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    padding: 40px 0 70px;
+    border-bottom: 1px solid var(--line);
+  }
+  .grid a {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 20px 22px;
+    transition: border-color .2s;
+  }
+  .grid a:hover { border-color: var(--line-2); }
+  .t { font-family: var(--se); font-size: 17px; }
+  .c { margin-left: auto; font-size: 12px; color: var(--muted); }
+  .empty { padding: 80px 0; text-align: center; color: var(--muted); }
+</style>

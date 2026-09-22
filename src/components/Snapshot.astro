@@ -1,0 +1,101 @@
+---
+/**
+ * マーケット・スナップショット。
+ * 案Aの数値ボードを、案Cのカードグリッドで表現したもの。
+ * 6枠を想定しているが、件数が変わっても崩れないよう
+ * グリッドは列数固定 + 罫線の打ち消しで組む。
+ */
+interface Quote {
+  label: string;
+  value: string;
+  change: string;
+  dir: 'up' | 'down' | 'flat';
+}
+interface Props {
+  quotes: Quote[];
+  /** 更新時刻など、右上に添えるメモ */
+  note?: string;
+}
+const { quotes, note } = Astro.props;
+---
+
+{quotes.length > 0 && (
+  <section class="snap-wrap" aria-label="マーケット・スナップショット">
+    <div class="snap">
+      {quotes.map((q) => (
+        <div class="sc">
+          <b>{q.label}</b>
+          <div class="v">{q.value}</div>
+          <div class:list={['c', q.dir]}>{q.change}</div>
+        </div>
+      ))}
+    </div>
+    {note && <p class="note">{note}</p>}
+  </section>
+)}
+
+<style>
+  .snap-wrap { margin-top: 26px; }
+  .snap {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+  .sc {
+    padding: 19px 20px;
+    border-right: 1px solid var(--line);
+  }
+  .sc:last-child { border-right: 0; }
+  .sc b {
+    display: block;
+    font-family: var(--sa);
+    font-size: 10.5px;
+    font-weight: 400;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .sc .v {
+    font-family: var(--sa);
+    font-size: 19px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.01em;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .sc .c {
+    font-family: var(--sa);
+    font-size: 11.5px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .c.up { color: var(--up); }
+  .c.down { color: var(--down); }
+  .c.flat { color: var(--muted); }
+
+  .note {
+    font-family: var(--sa);
+    font-size: 11.5px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 920px) {
+    .snap { grid-template-columns: repeat(3, 1fr); }
+    .sc { border-bottom: 1px solid var(--line); }
+    .sc:nth-child(3n) { border-right: 0; }
+    .sc:nth-last-child(-n + 3) { border-bottom: 0; }
+  }
+  @media (max-width: 540px) {
+    .snap { grid-template-columns: repeat(2, 1fr); }
+    .sc:nth-child(3n) { border-right: 1px solid var(--line); }
+    .sc:nth-child(2n) { border-right: 0; }
+    .sc:nth-last-child(-n + 3) { border-bottom: 1px solid var(--line); }
+    .sc:nth-last-child(-n + 2) { border-bottom: 0; }
+  }
+</style>

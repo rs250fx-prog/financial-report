@@ -1,0 +1,83 @@
+---
+import Base from '../layouts/Base.astro';
+import Subscribe from '../components/Subscribe.astro';
+import { listReports } from '../lib/content';
+import { SITE_NAME, PUBLISHER, PUBLISHER_URL, CADENCE } from '../config';
+
+const reports = await listReports();
+const latest = reports[0];
+---
+
+<Base
+  title="このメディアについて"
+  description={`${SITE_NAME} の編集方針と運営者情報。何を、どういう基準で書いているかを明示しています。`}
+  quotes={latest?.data.snapshot ?? []}
+  mastDate={latest?.data.date}
+  mastNo={latest?.data.no}
+>
+  <div class="wrap">
+    <header class="phead">
+      <h1>このメディアについて</h1>
+      <p class="deck">
+        {SITE_NAME} は、実質金利・ドル指数・コモディティ・資金フローの観点から、その日の市場を読み解くデイリーレポートです。{CADENCE}。
+      </p>
+    </header>
+
+    <div class="prose">
+      <h2>編集方針</h2>
+      <p>
+        結論だけを配る媒体にはしません。どのデータを、どう解釈して、その結論に至ったか。判断の過程を毎日残していくことを方針としています。
+      </p>
+      <p>
+        相場の見通しは外れます。外れたときに、何を前提にしていたのかが残っていなければ、次の判断は改善しません。このメディアの主目的は的中率の誇示ではなく、<strong>判断の過程を検証可能な形で記録し続けること</strong>にあります。
+      </p>
+
+      <h2>書かないこと</h2>
+      <ul>
+        <li>特定の金融商品についての売買推奨、および個別の投資判断への助言</li>
+        <li>出典を確認できないデータにもとづく断定</li>
+        <li>結論を強めるための、根拠の省略</li>
+      </ul>
+      <p>
+        当方は金融商品取引業者ではなく、投資助言・代理業の登録を受けていません。したがって本サイトの内容は、一貫して情報提供および分析にとどまります。
+      </p>
+
+      <h2>レポートの構成</h2>
+      <p>
+        各レポートは、冒頭にマーケット・スナップショットと「本日の要点」を置き、その後に本文を続ける構成で統一しています。要点だけを追う読み方と、論拠まで確認する読み方の両方ができるようにするためです。
+      </p>
+      <p>
+        週次まとめでは、その週の日次レポートを積み上げ直し、個別の値動きではなく資金の移動として何が起きたのかを整理します。
+      </p>
+
+      <h2 id="publisher">運営者情報</h2>
+      <p>
+        発行は <a href={PUBLISHER_URL}>{PUBLISHER}</a>。金融出身のWebマーケティング・スタジオとして、中小企業向けのサイト改善・LP制作・SEO内部設計・AI導入支援を行っています。
+      </p>
+      <p>
+        本メディアは、その分析の姿勢を日々公開するものとして運営しています。事業についてのお問い合わせは <a href={PUBLISHER_URL}>fam16.com</a> よりお願いします。
+      </p>
+    </div>
+
+    <Subscribe />
+  </div>
+</Base>
+
+<style>
+  .phead { padding: 48px 0 34px; border-bottom: 1px solid var(--line); }
+  h1 {
+    font-family: var(--se);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 20px;
+  }
+  .deck {
+    font-size: 16.5px;
+    line-height: 2.05;
+    font-weight: 300;
+    color: var(--ink-2);
+    max-width: 58ch;
+  }
+  .prose { max-width: 68ch; padding: 40px 0 60px; }
+</style>
