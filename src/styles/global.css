@@ -197,13 +197,21 @@ button { font: inherit; }
 }
 .tags a:hover { color: var(--ink); border-color: var(--ink); }
 
-/* ── 本文（Markdown 出力先） ──────────────────────────── */
+/* ── 本文（Markdown 出力先） ──────────────────────────────
+   可読性の基準は MSN（ニュース面）の実測値に寄せた。
+   本文 17px、色は副文ではなく地の文字色、段落間は詰める。
+
+   行間だけは MSN の 1.53 を採らず 1.8 にしてある。1.53 は
+   1段落が3〜4行で切れるニュース記事の設定であり、本媒体のように
+   長い分析文が続く紙面では行を見失いやすいため。
+   ここは --prose-leading の1行で調整できる。 */
 .prose {
-  font-size: 16.5px;
-  line-height: 2.05;
-  color: var(--ink-2);
+  --prose-leading: 1.8;
+  font-size: 17px;
+  line-height: var(--prose-leading);
+  color: var(--ink);
 }
-.prose > * + * { margin-top: 1.5em; }
+.prose > * + * { margin-top: 1.2em; }
 .prose h2 {
   font-family: var(--se);
   font-size: clamp(21px, 2.6vw, 27px);
