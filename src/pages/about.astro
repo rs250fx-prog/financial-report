@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Subscribe from '../components/Subscribe.astro';
 import { listReports } from '../lib/content';
-import { SITE_NAME, PUBLISHER, PUBLISHER_URL, CADENCE } from '../config';
+import { SITE_NAME, PUBLISHER, PUBLISHER_URL, CADENCE, OPERATOR } from '../config';
 
 const reports = await listReports();
 const latest = reports[0];
@@ -65,6 +65,21 @@ const latest = reports[0];
       <p>
         本メディアは、その分析の姿勢を日々公開するものとして運営しています。事業についてのお問い合わせは <a href={PUBLISHER_URL}>fam16.com</a> よりお願いします。
       </p>
+
+      <dl class="info">
+        <dt>名称</dt>
+        <dd>{OPERATOR.name}</dd>
+        <dt>代表者</dt>
+        <dd>{OPERATOR.representative}</dd>
+        <dt>所在地</dt>
+        <dd>{OPERATOR.address}</dd>
+        <dt>連絡先</dt>
+        <dd><a href={OPERATOR.contactUrl}>お問い合わせフォーム</a>（fam16.com）</dd>
+      </dl>
+
+      <p>
+        個人情報の取り扱いについては<a href="/privacy/">プライバシーポリシー</a>をご覧ください。
+      </p>
     </div>
 
     <Subscribe />
@@ -88,4 +103,27 @@ const latest = reports[0];
     max-width: 58ch;
   }
   .prose { max-width: 68ch; padding: 40px 0 60px; }
+
+  /* 事業者情報。ラベルと値を2カラムで並べる */
+  .info {
+    display: grid;
+    grid-template-columns: 6em 1fr;
+    gap: 10px 20px;
+    margin-top: 1.2em;
+    padding: 20px 22px;
+    background: var(--surface-2);
+    border-radius: 12px;
+    font-size: 15.5px;
+  }
+  .info dt {
+    font-family: var(--sa);
+    font-size: 13px;
+    color: var(--ink);
+    padding-top: .2em;
+  }
+  .info dd { margin: 0; }
+  @media (max-width: 520px) {
+    .info { grid-template-columns: 1fr; gap: 4px 0; padding: 18px; }
+    .info dd + dt { margin-top: 12px; }
+  }
 </style>

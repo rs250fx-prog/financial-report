@@ -34,6 +34,22 @@ export const SITE_DESCRIPTION =
 export const PUBLISHER = 'Financial and Marketing M16';
 export const PUBLISHER_URL = 'https://fam16.com/';
 
+/**
+ * 事業者情報。個人情報保護法32条1項により、個人情報取扱事業者の
+ * 名称・住所・代表者名は本人が知り得る状態に置く必要がある。
+ * プライバシーポリシーと運営者情報の両方がここを参照する。
+ */
+export const OPERATOR = {
+  name: 'Financial and Marketing M16',
+  representative: '村瀬 一郎',
+  address: '〒107-0062 東京都港区南青山3丁目1-36 青山丸竹ビル',
+  /** 問い合わせ導線。本サイトにフォームは持たず、fam16.com に集約する */
+  contactUrl: 'https://fam16.com/contact/',
+} as const;
+
+/** プライバシーポリシーの制定日 */
+export const PRIVACY_UPDATED = '2026年9月22日';
+
 /** 配信の建てつけ（マストヘッド右上などに表示） */
 export const CADENCE = '週5回 / 平日朝配信';
 
