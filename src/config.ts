@@ -10,11 +10,15 @@
 export const IS_PUBLIC = false;
 
 /**
- * 正規URL（末尾スラッシュなし）。
+ * 正規URL（末尾スラッシュなし）。canonical・OG画像・サイトマップ・
+ * RSS がすべてここを基準にするため、実在するホストを入れること。
+ *
+ * 現在は Cloudflare Pages の既定ホスト。プロジェクト名 financial-report は
+ * 他アカウントに取られていたため、Cloudflare が -bad を自動付与している。
  * 独自ドメインを取得したらここを差し替える。
- * 例: 'https://m16daily.com'
+ * 例: 'https://teiten.jp'
  */
-export const SITE_URL = 'https://financial-report-m16.pages.dev';
+export const SITE_URL = 'https://financial-report-bad.pages.dev';
 
 /**
  * 媒体名。表記はローマ字を正とし、漢字は補助に使う。
