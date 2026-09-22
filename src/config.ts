@@ -5,9 +5,13 @@
 /**
  * 本公開フラグ。
  * false のあいだは全ページ noindex、サイトマップ・RSS も出力しない。
- * 独自ドメイン接続と初期コンテンツが揃ってから true にする。
+ *
+ * 2026-09-22 に true へ切り替え（本公開）。
+ * これに合わせて public/_headers の X-Robots-Tag も削除済み。
+ * 片方だけ戻すとサイトマップと noindex が矛盾するので、
+ * 非公開へ戻す場合は必ず両方を戻すこと。
  */
-export const IS_PUBLIC = false;
+export const IS_PUBLIC = true;
 
 /**
  * 正規URL（末尾スラッシュなし）。canonical・OG画像・サイトマップ・

@@ -335,8 +335,7 @@ python tools/make-og.py
 
 | 項目 | 状態 |
 |---|---|
-| カスタムドメインの接続 | **apex `teiten.trade` を正とする方針で確定。** 現状は `www.teiten.trade` のみが配信されており（200）、apex はDNS未解決。Pages に apex を追加し、www → apex の301を設定する必要がある |
-| 本公開（`IS_PUBLIC`） | `false` のまま。ドメインが配信を始めてから切り替える |
+| カスタムドメインの接続 | **apex `teiten.trade` を正とする方針で確定。** Pages に apex を追加し、Page Rules で `www.teiten.trade/*` → `https://teiten.trade/$1` の301を設定する。**本公開済みのため、これが最優先** |
 | メール配信サービス | 未選定。`SUBSCRIBE_ACTION` が空でフォームは「準備中」表示 |
 | アクセス解析 | 未導入。導入前にプライバシーポリシーの改定が必要 |
 | 記事ごとのOG画像 | 全記事が共通画像。号数・日付入りの自動生成は将来課題 |
@@ -350,6 +349,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | **本公開**。`IS_PUBLIC` を `true` にし、`public/_headers` の `X-Robots-Tag` を削除。robots.txt が `Allow: /` に変わり、サイトマップ（15URL）と RSS の出力を開始。noindex が残るのは 404 のみ |
 | 2026-09-22 | SEO再監査で残っていた不備を修正。`article:modified_time` に表示用文字列（"13:13 JST"）を流していたのを ISO8601 に変換（`isoJst()`）。タグ別ページの h1→h3 スキップを解消。404 を恒久 noindex に。TOP と 404 の description 重複を解消し、全ページを80字以上に。本文の外部リンクに `target="_blank" rel="noopener noreferrer"` を自動付与（`rehype-external-links.mjs`） |
 | 2026-09-22 | SEO診断基準にもとづき全ページを修正。JSON-LD（WebSite / Organization / BreadcrumbList / NewsArticle）を追加、OG画像を生成、装飾用 `<s>` を `<span>` に変更、description を拡充、sitemap に lastmod を追加 |
 | 2026-09-22 | プライバシーポリシーを実態に合わせて全面改訂。事業者情報・開示等の請求手続き・外国にある第三者への提供を追加。事業者情報を `config.ts` の `OPERATOR` に集約 |
