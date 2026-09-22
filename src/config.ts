@@ -52,6 +52,19 @@ export const OPERATOR = {
   contactUrl: 'https://fam16.com/contact/',
 } as const;
 
+/**
+ * Google Analytics 4 の測定ID（例: 'G-XXXXXXXXXX'）。
+ *
+ * 空のあいだは計測タグを一切出力しない。プライバシーポリシーの
+ * GA4 に関する記述もこの値に連動するため、ID を入れれば
+ * 計測と告知が同時に有効になり、外せば同時に消える。
+ * 実態と記述が食い違わないようにするための作りである。
+ *
+ * GA4 は Cookie を使い、データは Google LLC（米国）へ送信される。
+ * 有効にする前に、プライバシーポリシーの記述が意図どおりか確認すること。
+ */
+export const GA4_MEASUREMENT_ID = '';
+
 /** プライバシーポリシーの最終改定日。改定したら必ず更新する */
 export const PRIVACY_UPDATED = '2026年9月22日';
 

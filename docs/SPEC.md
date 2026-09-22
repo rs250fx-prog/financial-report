@@ -103,6 +103,7 @@ docs/SPEC.md              本書
 | 免責事項の文言 | `src/config.ts` の `DISCLAIMER` |
 | グローバルナビの項目 | `src/config.ts` の `NAV` |
 | 事業者情報（名称・代表者・住所・連絡先） | `src/config.ts` の `OPERATOR` |
+| GA4 の測定ID | `src/config.ts` の `GA4_MEASUREMENT_ID`。空なら計測タグもポリシーの記述も出ない |
 | メール購読の導線を出すか | `src/config.ts` の `SUBSCRIBE_ENABLED` |
 | メール購読フォームの送信先 | `src/config.ts` の `SUBSCRIBE_ACTION` |
 | 配色・書体・余白 | `src/styles/global.css` の `:root` |
@@ -302,6 +303,12 @@ MSN のニュース面の実測値を基準にしている。
 - 下層ページ：`BreadcrumbList`
 - 記事：`NewsArticle`（`headline` / `datePublished` / `author` / `publisher` / `image` / `keywords` / `isAccessibleForFree`）
 
+### 計測タグと告知の連動
+
+GA4 に関する記述は `GA4_MEASUREMENT_ID` の有無に連動させてある。**IDを入れれば計測と告知が同時に有効になり、外せば同時に消える。**実態と記述が食い違わないようにするための作りなので、この条件分岐を外さないこと。
+
+同種の連動は購読導線（`SUBSCRIBE_ENABLED`）と公開制御（`IS_PUBLIC`）にもある。設定値ひとつで、機能と表示と告知がまとめて切り替わる状態を保つ。
+
 ### 禁止事項
 
 - **装飾目的で `<s>` を使わない。** 取り消し線の意味を持つ。区切り線は `<span class="rule">`
@@ -354,6 +361,7 @@ python tools/make-og.py
 | カスタムドメインの接続 | **apex `teiten.trade` を正とする方針で確定。** Pages に apex を追加し、Page Rules で `www.teiten.trade/*` → `https://teiten.trade/$1` の301を設定する。**本公開済みのため、これが最優先** |
 | メール配信サービス | 未選定。配信できる事業フェーズに入っていないため `SUBSCRIBE_ENABLED = false` とし、購読の導線を一切出していない。再開時は `SUBSCRIBE_ACTION` を埋めてから `SUBSCRIBE_ENABLED` を `true` にする |
 | アクセス解析 | Cloudflare Web Analytics が有効（Cloudflare が beacon を自動注入）。Cookie を使わない方式。プライバシーポリシーに反映済み。**無効化した場合はポリシーを戻すこと** |
+| GA4 | 実装済みだが `GA4_MEASUREMENT_ID` が空のため未稼働。測定IDを入れれば計測とポリシーの告知が同時に有効になる |
 | 記事ごとのOG画像 | 全記事が共通画像。号数・日付入りの自動生成は将来課題 |
 | サイト内検索 | 未実装。記事数が増えるまでは不要と判断。実装したら `SearchAction` スキーマを追加する（**検索URLが実際に動かないうちに追加してはいけない**） |
 | 著者表記 | 現在は組織名のみ。YMYL領域のため個人名での著者表記を検討中 |
@@ -366,6 +374,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | GA4 を実装。`GA4_MEASUREMENT_ID` が空のあいだは計測タグを出さず、プライバシーポリシーの GA4 に関する記述（取得する情報・Cookie・オプトアウト・外国にある第三者への提供・改定履歴）も同時に非表示になるようにした。測定IDを入れるだけで計測と告知が揃って有効になる |
 | 2026-09-22 | Cloudflare Web Analytics が有効であることを実測で確認し、プライバシーポリシーを改定。取得する情報・利用目的・Cookieの取り扱い・外国にある第三者への提供に反映し、改定履歴の節を追加。ブラウザのUAで取得しないと beacon が注入されないため、curl の既定UAでは検出できなかった |
 | 2026-09-22 | PageSpeed Insights 指摘への対応。Google Fonts の読み込みを廃止し、日本語をシステムフォントへ、欧文 Inter を自己ホスト（可変1ファイル48KB）に変更。レンダリングブロック約5.7秒の原因を除去し、外部リクエストを0件に。未使用の preconnect を削除し、フォントを preload。`_astro` とフォントに長期 immutable キャッシュを設定 |
 | 2026-09-22 | SEO指摘への対応。TOPのH1を媒体名のみからタグラインを含む形に変更（隠しテキストではなく画面表示のまま組み替え）。`Organization.logo` を横長のOG画像から専用の正方形ロゴ（512×512）へ差し替え。`CADENCE` を「週5回 / 平日朝配信」から「平日更新」へ。メール配信を前提にした「配信」表現をサイトの更新表現に統一 |

@@ -5,6 +5,7 @@ import Nav from '../components/Nav.astro';
 import Ticker from '../components/Ticker.astro';
 import Masthead from '../components/Masthead.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import Analytics from '../components/Analytics.astro';
 
 interface Quote {
   label: string;
@@ -93,6 +94,8 @@ const {
         /* ストレージが使えない環境では OS の設定に従う */
       }
     </script>
+
+    <Analytics />
   </head>
 
   <body>

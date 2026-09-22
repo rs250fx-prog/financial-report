@@ -9,6 +9,12 @@
  *   - 入力フォームなし（メール配信は未開始）
  *   - Cloudflare Web Analytics が有効（Cloudflare が beacon を自動注入）
  *   - ホスティングは Cloudflare Pages（米国法人）
+ *   - GA4 は config.ts の GA4_MEASUREMENT_ID が入っていれば有効
+ *
+ * GA4 に関する記述は GA4_MEASUREMENT_ID の有無に連動させてある。
+ * IDを入れれば計測と告知が同時に有効になり、外せば同時に消える。
+ * 実態と記述が食い違わないようにするための作りなので、
+ * この条件分岐を外さないこと。
  *
  * ⚠ メール配信を始めるときは、その前に本ページを更新すること。
  *   事業者名・所在国・外国移転への同意導線（法28条）が必要になる。
@@ -21,10 +27,14 @@ import {
   PUBLISHER_URL,
   OPERATOR,
   PRIVACY_UPDATED,
+  GA4_MEASUREMENT_ID,
 } from '../config';
 
 const reports = await listReports();
 const latest = reports[0];
+
+// GA4 の記述は、実際に計測タグを出しているときだけ表示する
+const ga4 = GA4_MEASUREMENT_ID !== '';
 ---
 
 <Base
@@ -67,6 +77,11 @@ const latest = reports[0];
         <li>
           <strong>アクセス解析</strong>：本サイトでは Cloudflare, Inc.（米国）が提供する Cloudflare Web Analytics を利用しています。閲覧されたページのURL、参照元ページ、ブラウザおよびOSの種別、おおよその国、ならびに表示速度に関する測定値が収集されます。
         </li>
+        {ga4 && (
+          <li>
+            <strong>Google アナリティクス</strong>：本サイトでは Google LLC（米国）が提供する Google アナリティクス4（GA4）を利用しています。閲覧されたページ、滞在時間、参照元、デバイスやブラウザの種別、おおよその地域などが収集されます。<strong>収集にあたっては Cookie が使用されます。</strong>収集された情報は Google 社のプライバシーポリシーにもとづいて管理され、当方が個々の閲覧者を特定できる形で受け取ることはありません。
+          </li>
+        )}
         <li>
           <strong>配信に伴う通信記録</strong>：本サイトは同社の Cloudflare Pages 上で配信されており、IPアドレス、ブラウザの種類、参照元ページなどの通信記録が同社のインフラ上で処理されます。
         </li>
@@ -86,18 +101,37 @@ const latest = reports[0];
 
       <h2>4. Cookie等の取り扱い</h2>
       <p>
-        本サイトが利用している Cloudflare Web Analytics は、<strong>Cookie を使用しません</strong>。閲覧者の端末に識別子を保存したり、複数のサイトをまたいで個人を追跡したりすることはありません。
+        本サイトが利用している Cloudflare Web Analytics は、<strong>Cookie を使用しません</strong>。
       </p>
+      {ga4 && (
+        <>
+          <p>
+            一方、Google アナリティクス4は<strong>Cookie を使用します</strong>。閲覧者の端末に識別子が保存され、同一ブラウザからの再訪が同じ利用者として集計されます。ただし氏名・メールアドレスなど、個人を直接特定する情報は収集されません。
+          </p>
+          <p>
+            Google アナリティクスによる収集を停止したい場合は、次のいずれかの方法をご利用ください。
+          </p>
+          <ul>
+            <li>
+              <a href="https://tools.google.com/dlpage/gaoptout?hl=ja">Google アナリティクス オプトアウト アドオン</a>をブラウザに導入する
+            </li>
+            <li>ブラウザの設定で Cookie を無効化する、またはトラッキング防止機能を有効にする</li>
+          </ul>
+          <p>
+            収集される情報の詳細および Google 社における取り扱いについては、<a href="https://policies.google.com/technologies/partner-sites?hl=ja">Google のサービスを使用するサイトやアプリから収集した情報の Google による使用</a>をご確認ください。
+          </p>
+        </>
+      )}
       <p>
         なお、配色（ライト／ダーク）の切り替えを行った場合に限り、その選択がご自身のブラウザ内にのみ保存されます。これは表示設定であり、当方に送信されることはありません。
       </p>
 
       <h2>5. 外国にある第三者への提供</h2>
       <p>
-        前述のとおり、本サイトの配信およびアクセス解析には、米国法人である Cloudflare, Inc. のサービスを利用しています。これに伴い、前記の情報が日本国外で処理される場合があります。
+        前述のとおり、本サイトの配信およびアクセス解析には、米国法人である Cloudflare, Inc. のサービスを利用しています{ga4 ? '。また、アクセス解析のために同じく米国法人である Google LLC のサービスを利用しています' : ''}。これに伴い、前記の情報が日本国外で処理される場合があります。
       </p>
       <p>
-        米国には日本の個人情報保護法と同等の水準にあると認められた包括的な個人情報保護制度は存在しませんが、同社は自ら定めるプライバシーポリシーにもとづき個人データを取り扱っています。
+        米国には日本の個人情報保護法と同等の水準にあると認められた包括的な個人情報保護制度は存在しませんが、{ga4 ? '各社' : '同社'}は自ら定めるプライバシーポリシーにもとづき個人データを取り扱っています。
       </p>
 
       <h2>6. 第三者への提供</h2>
@@ -144,6 +178,7 @@ const latest = reports[0];
 
       <h2>改定履歴</h2>
       <ul>
+        {ga4 && <li>2026年9月22日：Google アナリティクス4の利用、Cookieの使用、オプトアウト方法を追記</li>}
         <li>2026年9月22日：アクセス解析（Cloudflare Web Analytics）の利用と Cookie の取り扱いを追記</li>
         <li>2026年9月22日：制定</li>
       </ul>
