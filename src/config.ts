@@ -18,9 +18,10 @@ export const IS_PUBLIC = true;
  * RSS がすべてここを基準にするため、実在するホストを入れること。
  *
  * Cloudflare Pages の既定ホストは financial-report-bad.pages.dev。
- * （プロジェクト名 financial-report は他アカウントが取得済みで、
- *   Cloudflare が -bad を自動付与した）
- * 独自ドメイン接続後は、そちらを正規とする。
+ * （pages.dev のサブドメインは全アカウント共通の名前空間で、
+ *   financial-report は取得済みだったため -bad が自動付与された。
+ *   プロジェクト名自体は financial-report）
+ * 独自ドメイン接続済みのため、apex を正規とする。
  */
 export const SITE_URL = 'https://teiten.trade';
 

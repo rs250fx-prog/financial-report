@@ -5,7 +5,7 @@
 - **最終更新**：2026-09-22
 - **正規ドメイン**：apex（`https://teiten.trade/`）。`www` は301で apex へ寄せる
 - **本番URL**：https://teiten.trade （Cloudflare Pages カスタムドメイン、接続作業中）
-- **既定ホスト**：https://financial-report-bad.pages.dev
+- **既定ホスト**：https://financial-report-bad.pages.dev（`pages.dev` のサブドメインは全アカウント共通の名前空間で、`financial-report` は取得済みだったため `-bad` が自動付与された。プロジェクト名自体は `financial-report`）
 - **リポジトリ**：rs250fx-prog/financial-report（`main` ブランチ、push で自動デプロイ）
 - **ローカル**：`D:\OneDrive\01_仕事・事業\M16BIZ\financial-report`
 
@@ -47,7 +47,7 @@
 
 | 項目 | 値 |
 |---|---|
-| Project name | `financial-report-bad`（自動生成のまま。`financial-report` は他アカウントが取得済み） |
+| Project name | `financial-report` |
 | Production branch | `main` |
 | Build command | `npm run build` |
 | Build output directory | `dist` |
@@ -349,6 +349,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-22 | apex `teiten.trade` と `www.teiten.trade` を Pages のカスタムドメインに追加。apex が 200 を返すことを確認。www → apex の301は Page Rules で設定予定 |
 | 2026-09-22 | **本公開**。`IS_PUBLIC` を `true` にし、`public/_headers` の `X-Robots-Tag` を削除。robots.txt が `Allow: /` に変わり、サイトマップ（15URL）と RSS の出力を開始。noindex が残るのは 404 のみ |
 | 2026-09-22 | SEO再監査で残っていた不備を修正。`article:modified_time` に表示用文字列（"13:13 JST"）を流していたのを ISO8601 に変換（`isoJst()`）。タグ別ページの h1→h3 スキップを解消。404 を恒久 noindex に。TOP と 404 の description 重複を解消し、全ページを80字以上に。本文の外部リンクに `target="_blank" rel="noopener noreferrer"` を自動付与（`rehype-external-links.mjs`） |
 | 2026-09-22 | SEO診断基準にもとづき全ページを修正。JSON-LD（WebSite / Organization / BreadcrumbList / NewsArticle）を追加、OG画像を生成、装飾用 `<s>` を `<span>` に変更、description を拡充、sitemap に lastmod を追加 |

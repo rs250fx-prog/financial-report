@@ -22,7 +22,7 @@ npm run build   # dist/ に出力
 
 | 項目 | 値 |
 |---|---|
-| Project name | `financial-report-bad`（自動生成のまま） |
+| Project name | `financial-report` |
 | Production branch | `main` |
 | Build command | `npm run build` |
 | Build output directory | `dist` |
