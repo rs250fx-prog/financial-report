@@ -9,11 +9,13 @@
  * 記法の抜け道（フロー表示・frontmatter・コンポーネント）を
  * まとめて塞げるのは、この位置しかない。
  *
- * postbuild に繋いであるため、ここで落ちると Cloudflare の公開も止まる。
- * アスタリスクの露出は体裁の問題にとどまらず、生成物をそのまま貼ったという
- * 印象を与えるため、媒体として公開を止めるに値すると判断している。
+ * postbuild に繋いであるが、既定では警告にとどめてビルドは通す。
+ * アスタリスクの露出は体裁の問題であり、記事が出ないことのほうが損失が
+ * 大きい。**公開を止めない。** 実際の救済は remark-strong-fix.mjs が行い、
+ * ここは漏れに気づくための最後の網である。
  *
- *   node tools/check-html.mjs
+ *   node tools/check-html.mjs            警告のみ（終了コード0）
+ *   node tools/check-html.mjs --strict   異常があれば終了コード1
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -41,7 +43,8 @@ function walk(dir) {
 
 if (!fs.existsSync(DIST)) {
   console.error('dist がありません。先に npm run build を実行してください。');
-  process.exit(1);
+  // 出力先が変わっただけで公開が止まらないよう、ここも既定では落とさない
+  process.exit(process.argv.includes('--strict') ? 1 : 0);
 }
 
 const pages = walk(DIST);
@@ -60,7 +63,9 @@ for (const page of pages) {
 if (bad) {
   console.error(`\n可視のアスタリスクが ${bad} 件あります。`);
   console.error('閉じ側の ** の直後に句読点か空白を置くか、強調をやめてください。');
-  process.exit(1);
+  // 既定ではビルドを止めない。記事が出ないことのほうが損失が大きい
+  if (process.argv.includes('--strict')) process.exit(1);
+  process.exit(0);
 }
 
 console.log(`OK 可視のアスタリスクなし（${pages.length}ページ）`);
