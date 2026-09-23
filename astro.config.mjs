@@ -24,7 +24,12 @@ function unlistedPaths(dir, prefix) {
     .map((f) => `${prefix}/${f.replace(/\.md$/, '')}`);
 }
 
+// 管理画面はサイトマップに載せない。恒久 noindex なので、
+// 載せると Search Console がエラーを出す
+const ALWAYS_EXCLUDED = ['/admin'];
+
 const excluded = [
+  ...ALWAYS_EXCLUDED,
   ...unlistedPaths('./src/content/reports', '/reports'),
   ...unlistedPaths('./src/content/weekly', '/weekly'),
 ];

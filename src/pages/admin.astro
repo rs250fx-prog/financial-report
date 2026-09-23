@@ -1,0 +1,163 @@
+---
+/**
+ * 公開管理（スマホ対応）。
+ *
+ * Cloudflare Access で保護し、Pages Functions 経由で GitHub を操作する。
+ * ローカルのクローンもPCの起動も不要。
+ *
+ * - 認証は `functions/admin/_middleware.ts` が JWT を検証して行う
+ * - このページ自体も Access の配下に入るため、素の状態では開けない
+ * - **恒久 noindex。サイトマップからも除外している**（astro.config.mjs）
+ *
+ * ローカルで作業するときは `python tools/admin.py` のほうが速い。
+ * あちらは check-report.py をそのまま回せる。
+ */
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="公開管理" description="TEITEN の公開管理。Cloudflare Access で保護されています。" noindex>
+  <div class="wrap">
+    <header class="phead">
+      <h1>公開管理</h1>
+      <p>定期実行が下書きで push します。内容を確認してここから公開してください。</p>
+    </header>
+
+    <div class="bar">
+      <span class="pill" id="count">読み込み中…</span>
+      <a class="btn" href="/reports/" target="_blank" rel="noopener">サイトを見る</a>
+      <button class="btn" id="reload" type="button">再読み込み</button>
+    </div>
+
+    <div id="list" class="list" aria-live="polite"></div>
+  </div>
+</Base>
+
+<style>
+  .phead { padding: 40px 0 20px; }
+  h1 { font-size: clamp(24px, 4vw, 32px); font-weight: 700; line-height: 1.4; }
+  .phead p { font-size: 14.5px; color: var(--ink-2); margin-top: 12px; }
+  .bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }
+  .pill {
+    font-family: var(--sa); font-size: 12.5px;
+    background: var(--surface-2); border: 1px solid var(--line-2);
+    border-radius: 999px; padding: 6px 14px;
+  }
+  .pill.warn { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .btn {
+    font-family: var(--sa); font-size: 12.5px; padding: 6px 14px;
+    border: 1px solid var(--line-2); border-radius: 999px;
+    background: var(--bg); color: var(--ink); cursor: pointer;
+  }
+
+  .list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 70px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 18px 20px;
+  }
+  .meta {
+    display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;
+    font-family: var(--sa); font-size: 12px; color: var(--muted);
+  }
+  .st { font-weight: 700; }
+  .st.draft { color: var(--down); }
+  .st.pub { color: var(--up); }
+  .ttl { font-size: 16px; font-weight: 500; line-height: 1.6; margin: 8px 0 12px; }
+  .errs {
+    background: var(--surface-2); border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 12px;
+    font-size: 13px; line-height: 1.9; color: var(--ink);
+  }
+  .errs b { display: block; font-family: var(--sa); font-size: 11px;
+    letter-spacing: .12em; color: var(--down); margin-bottom: 6px; }
+  .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .acts button, .acts a {
+    font-family: var(--sa); font-size: 13px; padding: 9px 18px;
+    border-radius: 999px; border: 1px solid var(--line-2);
+    background: var(--bg); color: var(--ink); cursor: pointer;
+    text-decoration: none; display: inline-block;
+  }
+  .acts button.go {
+    background: var(--accent); border-color: var(--accent);
+    color: var(--accent-ink); font-weight: 700;
+  }
+  .acts button:disabled { opacity: .45; cursor: not-allowed; }
+  .msg { font-size: 13.5px; padding: 16px 0; color: var(--ink); }
+</style>
+
+<script>
+  const listEl = document.getElementById('list');
+  const countEl = document.getElementById('count');
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  async function load() {
+    listEl.innerHTML = '<p class="msg">読み込み中…</p>';
+    let data;
+    try {
+      const res = await fetch('/admin/api/reports');
+      data = await res.json();
+    } catch (e) {
+      listEl.innerHTML = `<p class="msg">読み込みに失敗しました（${esc(e.message)}）</p>`;
+      return;
+    }
+    if (!data.ok) {
+      listEl.innerHTML = `<p class="msg">読み込みに失敗しました：${esc(data.message)}</p>`;
+      return;
+    }
+
+    const drafts = data.items.filter((x) => x.draft);
+    countEl.textContent = drafts.length ? `未公開 ${drafts.length}件` : '未公開なし';
+    countEl.className = drafts.length ? 'pill warn' : 'pill';
+
+    listEl.innerHTML = data.items.map((x) => {
+      const ok = x.errors.length === 0;
+      const st = x.draft
+        ? '<span class="st draft">下書き</span>'
+        : '<span class="st pub">公開中</span>';
+      const errs = ok ? '' :
+        `<div class="errs"><b>公開できません</b>${
+          x.errors.map((e) => esc(e)).join('<br>')}</div>`;
+      const act = x.draft
+        ? `<button class="go" data-path="${esc(x.path)}" data-publish="1"${
+            ok ? '' : ' disabled'}>公開する</button>`
+        : `<button data-path="${esc(x.path)}" data-publish="">下書きに戻す</button>`;
+      return `<article class="card">
+        <div class="meta"><span>${esc(x.kind === 'daily' ? '日次' : '週次')}</span>
+        <span>No.${esc(x.no)}</span><span>${esc(x.date)}</span>${st}</div>
+        <p class="ttl">${esc(x.title)}</p>${errs}
+        <div class="acts">${act}
+        <a href="${esc(x.url)}" target="_blank" rel="noopener">記事を見る</a></div>
+      </article>`;
+    }).join('');
+  }
+
+  listEl.addEventListener('click', async (ev) => {
+    const btn = ev.target.closest('button[data-path]');
+    if (!btn) return;
+    const publish = btn.dataset.publish === '1';
+    if (publish && !confirm('公開します。よろしいですか。')) return;
+    btn.disabled = true;
+    btn.textContent = '処理中…';
+    try {
+      const res = await fetch('/admin/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: btn.dataset.path, publish }),
+      });
+      const d = await res.json();
+      if (!d.ok) {
+        alert(`${d.message}\n\n${(d.errors ?? []).join('\n')}`);
+      } else {
+        alert(publish
+          ? '公開しました。数分後にサイトへ反映されます。'
+          : '下書きに戻しました。');
+      }
+    } catch (e) {
+      alert(`失敗しました：${e.message}`);
+    }
+    load();
+  });
+
+  document.getElementById('reload').addEventListener('click', load);
+  load();
+</script>

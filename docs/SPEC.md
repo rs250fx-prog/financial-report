@@ -364,6 +364,49 @@ GA4 に関する記述は `GA4_MEASUREMENT_ID` の有無に連動させてある
 
 ### 公開管理
 
+管理画面は2つある。**やることは同じで、動く場所が違う。**
+
+| | 置き場所 | 認証 | 検査 |
+|---|---|---|---|
+| `https://teiten.trade/admin` | Cloudflare Pages Functions | Cloudflare Access | TS版（`functions/admin/_lib.ts`） |
+| `python tools/admin.py` | ローカル（127.0.0.1:4399） | 不要（ローカルのみ） | `check-report.py` そのもの |
+
+**スマホからは `/admin`。**PCで作業中はローカル版のほうが速く、権威ある検査
+（`check-report.py`）をそのまま回せる。
+
+#### /admin（スマホ・外出先向け）
+
+GitHub API 経由で `draft` を書き換えてコミットする。ローカルのクローンもPCの
+起動も不要。コミットすると Cloudflare Pages が自動で再デプロイする。
+
+**認証は Cloudflare Access。**ただし `*.pages.dev` へ直接叩かれる経路が残るため、
+`functions/admin/_middleware.ts` が Access の JWT を**署名まで検証**する。
+ヘッダの有無だけを見る実装にはしていない（ヘッダは呼び出し側が付けられる）。
+**環境変数が未設定なら誰も通さない**（fail closed）。
+
+必要な環境変数（Cloudflare Pages の設定画面で登録する）
+
+| 変数 | 内容 |
+|---|---|
+| `CF_ACCESS_TEAM_DOMAIN` | 例 `example.cloudflareaccess.com` |
+| `CF_ACCESS_AUD` | Access アプリケーションの Audience タグ |
+| `GITHUB_TOKEN` | fine-grained PAT。**このリポジトリの `contents: write` だけに絞る** |
+| `GITHUB_REPO` | 省略可。既定は `rs250fx-prog/financial-report` |
+
+Access のアプリケーションは **`teiten.trade/admin*`** に対して作る。画面もAPIも
+`/admin` 配下に置いてあるので、この1本で両方を覆える。
+
+**検査について**：Worker 上では Python が動かないため、`check-report.py` を
+そのまま呼べない。`functions/admin/_lib.ts` に**公開の可否に直結する項目だけ**を
+移植してある。権威ある検査は引き続き `check-report.py` で、定期実行は push 前に
+そちらを通している。TS版は「壊れた下書きを公開させない」最後の砦という位置づけ。
+**両方を直すときは片方だけ直さないこと。**
+
+`/admin` は恒久 noindex で、サイトマップからも除外している（`astro.config.mjs` の
+`ALWAYS_EXCLUDED`）。
+
+#### tools/admin.py（ローカル向け）
+
 ```bash
 python tools/admin.py   # http://127.0.0.1:4399 が開く
 ```
@@ -438,6 +481,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-23 | スマホから使える管理画面 `/admin` を追加。Cloudflare Pages Functions から GitHub API を叩いて `draft` を切り替える。認証は Cloudflare Access だが、`*.pages.dev` への直接アクセスに備えて Function 側でも JWT を署名まで検証し、環境変数が未設定なら誰も通さない。Worker では Python が動かないため、公開の可否に直結する検査だけを TS に移植した |
 | 2026-09-23 | 公開管理の画面（`tools/admin.py`）を追加。定期実行が下書きで push し、人が確認して公開する運用にするため。検査が通らない記事は公開できないようにし、公開処理の途中で検査に落ちた場合は `draft: true` に戻して中断する |
 | 2026-09-23 | note用の簡易版の運用を開始。`note/` に原稿を置く（ビルド対象外）。数字と結論は出し切り、分解の過程（金利の多層・三軸・テクニカルレベル・Crypto/Volatility・シナリオ・出典）をサイトに残す線引きとした。分量はサイト版の3〜4割 |
 | 2026-09-22 | 週次の構造化を日次と同水準に。`levels`（テクニカル・レベル）と `scenarios`（bull/base/bear、発動条件・因果連鎖・価格目処）をスキーマに追加し、`ScenarioCards` で表示。本文の必須節を3→4に増やし、小見出しと日経の予想レンジも検査対象にした |
