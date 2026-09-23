@@ -86,6 +86,7 @@ npm run build
 src/
 ├── config.ts             全体設定。ここだけ触れば全ページに反映される
 ├── content.config.ts     コンテンツのスキーマ定義
+├── remark-strong-fix.mjs 日本語で閉じられなかった強調記号を救済する remark プラグイン
 ├── remark-flow.mjs       「資金　A → B」等をフロー表示に変換する remark プラグイン
 ├── lib/content.ts        コレクションの取得・整形ヘルパー
 ├── layouts/Base.astro    全ページ共通の外枠
@@ -481,6 +482,7 @@ python tools/make-og.py
 
 | 日付 | 内容 |
 |---|---|
+| 2026-09-23 | 本文にアスタリスクが出ないようにした。日本語は句点のあとに空白を置かないため、CommonMark の flanking 規則で閉じ側の `**` が強調を閉じられず、記号がそのまま表示される。`remark-strong-fix.mjs` で救済し、`tools/check-html.mjs` をビルド後に走らせて出力 HTML の可視テキストを最終確認する。落ちれば公開も止まる |
 | 2026-09-23 | スマホから使える管理画面 `/admin` を追加。Cloudflare Pages Functions から GitHub API を叩いて `draft` を切り替える。認証は Cloudflare Access だが、`*.pages.dev` への直接アクセスに備えて Function 側でも JWT を署名まで検証し、環境変数が未設定なら誰も通さない。Worker では Python が動かないため、公開の可否に直結する検査だけを TS に移植した |
 | 2026-09-23 | 公開管理の画面（`tools/admin.py`）を追加。定期実行が下書きで push し、人が確認して公開する運用にするため。検査が通らない記事は公開できないようにし、公開処理の途中で検査に落ちた場合は `draft: true` に戻して中断する |
 | 2026-09-23 | note用の簡易版の運用を開始。`note/` に原稿を置く（ビルド対象外）。数字と結論は出し切り、分解の過程（金利の多層・三軸・テクニカルレベル・Crypto/Volatility・シナリオ・出典）をサイトに残す線引きとした。分量はサイト版の3〜4割 |

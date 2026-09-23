@@ -4,6 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import fs from 'node:fs';
 import path from 'node:path';
 import { IS_PUBLIC, SITE_URL } from './src/config.ts';
+import { remarkStrongFix } from './src/remark-strong-fix.mjs';
 import { remarkFlow } from './src/remark-flow.mjs';
 import { rehypeExternalLinks } from './src/rehype-external-links.mjs';
 
@@ -50,8 +51,9 @@ export default defineConfig({
       ]
     : [],
   markdown: {
-    // 「資金　A → B」の行を資金フロー表示に変換する
-    remarkPlugins: [remarkFlow],
+    // 日本語で閉じられなかった強調記号を救済してから、フロー変換にかける。
+    // 順序が逆だと、残ったアスタリスクがフロー表示へそのまま出る
+    remarkPlugins: [remarkStrongFix, remarkFlow],
     // 本文の外部リンクに target と rel を一括付与する
     rehypePlugins: [rehypeExternalLinks],
   },

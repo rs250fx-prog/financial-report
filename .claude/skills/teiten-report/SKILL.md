@@ -127,6 +127,10 @@ npm run build
 
 記事を**削除**した場合や、`remark-flow.mjs` / `astro.config.mjs` を触った場合は、先にキャッシュを消す。`.astro` だけでは足りない。
 
+ビルドの最後に `tools/check-html.mjs` が走り、出力された HTML の可視テキストにアスタリスクが無いことを確認する。**ここで落ちたらビルドは失敗であり、公開されない。**
+
+日本語は句点のあとに空白を置かないため、`**……である。**次に` のような書き方は CommonMark の規則で強調を閉じられず、記号がそのまま表示される。`remark-strong-fix.mjs` が救済するので**執筆側で気にする必要はない**が、検査が落ちたときはこの理由を疑う。
+
 ```bash
 rm -rf .astro dist node_modules/.astro node_modules/.vite
 ```
