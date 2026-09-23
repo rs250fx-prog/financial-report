@@ -29,6 +29,12 @@ import Base from '../layouts/Base.astro';
     </div>
 
     <div id="list" class="list" aria-live="polite"></div>
+
+    <nav class="pager" id="pager" hidden>
+      <button class="btn" id="prev" type="button">← 前へ</button>
+      <span class="pgnum" id="pgnum"></span>
+      <button class="btn" id="next" type="button">次へ →</button>
+    </nav>
   </div>
 </Base>
 
@@ -49,49 +55,80 @@ import Base from '../layouts/Base.astro';
     background: var(--bg); color: var(--ink); cursor: pointer;
   }
 
-  .list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 70px; }
-  .card {
+  .list { display: flex; flex-direction: column; gap: 12px; }
+
+  .pager {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    padding: 24px 0 70px;
+  }
+  .pgnum { font-family: var(--sa); font-size: 12.5px; color: var(--muted); }
+  .pager button:disabled { opacity: .35; cursor: not-allowed; }
+</style>
+
+<!--
+  一覧は JavaScript が innerHTML で組み立てるため、Astro のスコープ付き
+  スタイルが効かない。スコープは data-astro-cid-* 属性で実現されており、
+  その属性はビルド時にテンプレート上の要素へ付く。動的に作った要素には
+  付かないので、ここのルールは黙って無視される。
+
+  そのため一覧まわりだけ is:global にし、代わりに `#list` を前置して
+  適用範囲を閉じ込める。
+-->
+<style is:global>
+  #list .card {
     background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--r); padding: 18px 20px;
   }
-  .meta {
+  /* 記事どうしの切れ目。カードの枠線だけでは区切りが読み取りにくい */
+  #list .sep { border: 0; border-top: 1px solid var(--line-2); margin: 6px 0; }
+  #list .meta {
     display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;
     font-family: var(--sa); font-size: 12px; color: var(--muted);
   }
-  .st { font-weight: 700; }
-  .st.draft { color: var(--down); }
-  .st.pub { color: var(--up); }
-  .ttl { font-size: 16px; font-weight: 500; line-height: 1.6; margin: 8px 0 12px; }
-  .errs {
+  #list .st { font-weight: 700; }
+  #list .st.draft { color: var(--down); }
+  #list .st.pub { color: var(--up); }
+  #list .ttl { font-size: 16px; font-weight: 500; line-height: 1.6; margin: 8px 0 12px; }
+  #list .errs {
     background: var(--surface-2); border-radius: 10px;
     padding: 12px 14px; margin-bottom: 12px;
     font-size: 13px; line-height: 1.9; color: var(--ink);
   }
-  .errs b { display: block; font-family: var(--sa); font-size: 11px;
+  #list .errs b { display: block; font-family: var(--sa); font-size: 11px;
     letter-spacing: .12em; color: var(--down); margin-bottom: 6px; }
-  .acts { display: flex; gap: 8px; flex-wrap: wrap; }
-  .acts button, .acts a {
+  #list .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+  #list .acts button, #list .acts a {
     font-family: var(--sa); font-size: 13px; padding: 9px 18px;
     border-radius: 999px; border: 1px solid var(--line-2);
     background: var(--bg); color: var(--ink); cursor: pointer;
     text-decoration: none; display: inline-block;
   }
-  .acts button.go {
+  #list .acts button.go {
     background: var(--accent); border-color: var(--accent);
     color: var(--accent-ink); font-weight: 700;
   }
-  .acts button:disabled { opacity: .45; cursor: not-allowed; }
-  .msg { font-size: 13.5px; padding: 16px 0; color: var(--ink); }
+  #list .acts button:disabled { opacity: .45; cursor: not-allowed; }
+  #list .msg { font-size: 13.5px; padding: 16px 0; color: var(--ink); }
 </style>
 
 <script>
   const listEl = document.getElementById('list');
   const countEl = document.getElementById('count');
+  const pagerEl = document.getElementById('pager');
+  const pgnumEl = document.getElementById('pgnum');
+  const prevEl = document.getElementById('prev');
+  const nextEl = document.getElementById('next');
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g,
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+  // API は新しい順で返すので、先頭から5件が最新になる
+  const PER_PAGE = 5;
+  let items = [];
+  let page = 0;
+
   async function load() {
     listEl.innerHTML = '<p class="msg">読み込み中…</p>';
+    pagerEl.hidden = true;
     let data;
     try {
       const res = await fetch('/admin/api/reports');
@@ -105,11 +142,26 @@ import Base from '../layouts/Base.astro';
       return;
     }
 
-    const drafts = data.items.filter((x) => x.draft);
+    items = data.items;
+    const drafts = items.filter((x) => x.draft);
     countEl.textContent = drafts.length ? `未公開 ${drafts.length}件` : '未公開なし';
     countEl.className = drafts.length ? 'pill warn' : 'pill';
 
-    listEl.innerHTML = data.items.map((x) => {
+    // 公開・下書き戻しのあとも同じページに留まる。件数が減ったときだけ戻す
+    render();
+  }
+
+  function render() {
+    const pages = Math.max(1, Math.ceil(items.length / PER_PAGE));
+    page = Math.min(Math.max(0, page), pages - 1);
+
+    if (!items.length) {
+      listEl.innerHTML = '<p class="msg">記事がありません。</p>';
+      pagerEl.hidden = true;
+      return;
+    }
+
+    listEl.innerHTML = items.slice(page * PER_PAGE, (page + 1) * PER_PAGE).map((x) => {
       const ok = x.errors.length === 0;
       const st = x.draft
         ? '<span class="st draft">下書き</span>'
@@ -128,7 +180,18 @@ import Base from '../layouts/Base.astro';
         <div class="acts">${act}
         <a href="${esc(x.url)}" target="_blank" rel="noopener">記事を見る</a></div>
       </article>`;
-    }).join('');
+    }).join('<hr class="sep">');
+
+    pagerEl.hidden = pages < 2;
+    pgnumEl.textContent = `${page + 1} / ${pages}（全${items.length}件）`;
+    prevEl.disabled = page === 0;
+    nextEl.disabled = page === pages - 1;
+  }
+
+  function turn(delta) {
+    page += delta;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   listEl.addEventListener('click', async (ev) => {
@@ -158,6 +221,11 @@ import Base from '../layouts/Base.astro';
     load();
   });
 
-  document.getElementById('reload').addEventListener('click', load);
+  prevEl.addEventListener('click', () => turn(-1));
+  nextEl.addEventListener('click', () => turn(1));
+  document.getElementById('reload').addEventListener('click', () => {
+    page = 0;
+    load();
+  });
   load();
 </script>
