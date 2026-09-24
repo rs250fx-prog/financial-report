@@ -1,0 +1,24 @@
+# 改行コードをリポジトリ側で固定する。
+#
+# このリポジトリは3か所から書き込まれる。
+#
+#   - Windows のローカル（この環境）
+#   - クラウドの定期実行（Linux）
+#   - 管理画面 /admin（GitHub API。常に LF）
+#
+# 各環境の core.autocrlf 任せにすると、中身が同じでもファイル全体が
+# 差分として出る。Python と Node のツールが同じファイルを読むため、
+# **LF に固定する。**
+* text=auto eol=lf
+
+# Windows でのみ使うものは CRLF のまま
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 変換してはいけないもの
+*.png  binary
+*.jpg  binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.pdf  binary
