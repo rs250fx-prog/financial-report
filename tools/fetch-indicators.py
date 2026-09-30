@@ -79,11 +79,13 @@ def main() -> int:
     print(f"取得日 {today:%Y-%m-%d}（FRED。祝日で遅れることがある）\n")
 
     stale = []
+    failed = []
     for sid, name, unit, expect in SERIES:
         try:
             d, v = latest(sid)
         except Exception as e:
             print(f"NG  {name}（{sid}）取得できません: {e}")
+            failed.append((sid, name))
             stale.append(name)
             continue
         if d is None:
@@ -106,6 +108,25 @@ def main() -> int:
         for s in stale:
             print(f"  - {s}")
         print("休場明けなら正常。続くようなら docs/SOURCES.md の取得元を見直す。")
+
+    if failed:
+        print("\n" + "=" * 60)
+        print("このスクリプトから通信できなかった。実行環境が外向き通信を")
+        print("塞いでいる場合に起きる（クラウドの定期実行で実際に起きた）。")
+        print("**ここで諦めて『未確認』にしない。**次の手順で取る。\n")
+        for sid, name in failed:
+            print(f"  {name}")
+            print(f"    {URL.format(sid)}")
+        print("""
+1. 上のURLをWeb取得ツールで開く
+2. **要約された文章から数字を読まない。**保存された生ファイルを開き、
+   `YYYY-MM-DD,値` の行をそのまま読む
+3. 日付が平日で、直近5営業日以内であることを確かめる
+4. それでも生の行を確認できなければ「未確認」と書く
+
+要約を通すと数値が作られる。実際に、存在しない土曜日（2026-09-26）の
+行が混ざった出力が返ったことがある。生データには無い行だった。
+**数字は要約から取らない。**""")
 
     print("\n原油・DXY・金・日経・BTC はFREDでは間に合わない。")
     print("取得元は docs/SOURCES.md を参照。")
