@@ -5,7 +5,25 @@ import { PUBLISHER, PUBLISHER_URL } from '../config';
 <section class="sec">
   <div class="colo">
     <a class="cc" href={PUBLISHER_URL}>
-      <span class="av" aria-hidden="true"></span>
+      {/*
+        運営元のファビコン（fam16.com/favicon.svg）をそのまま取り込んだもの。
+        465バイトしかないので、ファイルに置いて1リクエスト増やすより inline のほうが軽い。
+        このコンポーネントはトップページでしか使っていないため、他ページには乗らない。
+
+        外部から読みに行かないのは、相手サイトの差し替えで表示が壊れることと、
+        このサイトが外部リクエスト0件で成り立っているため。
+        先方がファビコンを変えたら、ここも差し替える。
+      */}
+      <span class="av" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="48" height="48">
+          <rect width="64" height="64" rx="12" fill="#0b1428"/>
+          <rect x="2.5" y="2.5" width="59" height="59" rx="10" fill="none" stroke="#24375c" stroke-width="1"/>
+          <text x="32" y="33" dominant-baseline="central" text-anchor="middle"
+                font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700">
+            <tspan fill="#ffffff">F</tspan><tspan fill="#5b8fd6">M</tspan>
+          </text>
+        </svg>
+      </span>
       <div>
         <div class="r">運営元</div>
         <h2>{PUBLISHER}</h2>
@@ -52,8 +70,14 @@ import { PUBLISHER, PUBLISHER_URL } from '../config';
     height: 48px;
     flex: none;
     border-radius: 12px;
-    background: linear-gradient(140deg, var(--ink) 0%, var(--muted) 100%);
+    /* SVG自身が角丸を持つが、はみ出しを container 側でも止めておく */
+    overflow: hidden;
+    display: block;
+    /* ダークモードではファビコンの紺（#0b1428）がカード背景に沈み、
+       「FM」だけが浮いて見える。輪郭を1本入れてタイルとして読ませる */
+    box-shadow: inset 0 0 0 1px var(--line-2);
   }
+  .av svg { display: block; }
   .r {
     font-family: var(--sa);
     font-size: 10.5px;
