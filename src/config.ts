@@ -111,5 +111,6 @@ export const NAV = [
   { href: '/reports/', label: 'デイリーレポート' },
   { href: '/weekly/', label: '週次まとめ' },
   { href: '/topics/', label: 'トピック' },
+  { href: '/review/', label: '答え合わせ' },
   { href: '/about/', label: 'このメディアについて' },
 ] as const;

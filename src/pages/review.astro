@@ -1,0 +1,141 @@
+---
+/**
+ * シナリオ検証の履歴。
+ *
+ * 毎号の答え合わせを1枚に集め、通算を出す。
+ *
+ * **的中率を売り文句にしない。**数字を大きく見せると、外れた回を書きにくくなり、
+ * 記録として成立しなくなる。ここは成績表ではなく、見立ての癖を残す場所である。
+ * 件数が少ないうちは割合そのものに意味が無いことも明示する。
+ */
+import Base from '../layouts/Base.astro';
+import { listReports } from '../lib/content';
+import { SITE_NAME } from '../config';
+
+const reports = await listReports();
+const latest = reports[0];
+
+// 新しい順。review を持つ号だけ
+const rows = reports
+  .filter((r) => r.data.review)
+  .map((r) => ({
+    date: r.data.date,
+    no: r.data.no,
+    slug: r.id.replace(/\.md$/, ''),
+    title: r.data.title,
+    ...r.data.review!,
+  }));
+
+const LABEL = {
+  hit: '想定どおり',
+  partial: '部分的に想定どおり',
+  miss: '想定と違った',
+  pending: '判定は持ち越し',
+} as const;
+
+const count = (v: string) => rows.filter((r) => r.verdict === v).length;
+const judged = rows.filter((r) => r.verdict !== 'pending').length;
+
+const md = (s: string) => {
+  const [, m, d] = s.split('-');
+  return `${Number(m)}/${Number(d)}`;
+};
+---
+
+<Base
+  title="シナリオ検証の履歴"
+  description={`${SITE_NAME}（定点）が各号で出したシナリオが、その後どうなったかの記録。当たった回だけでなく、外れた回も同じ形式で残しています。見立ての癖を確認するための一覧です。`}
+  breadcrumbs={[{ name: 'シナリオ検証の履歴' }]}
+  quotes={latest?.data.snapshot ?? []}
+  mastDate={latest?.data.date}
+  mastNo={latest?.data.no}
+>
+  <div class="wrap">
+    <header class="phead">
+      <h1>シナリオ検証の履歴</h1>
+      <p class="deck">
+        各号で出したシナリオが、その後どうなったかの記録です。<strong>当たった回だけを残すと記録になりません。</strong>外れた回も同じ形式で並べています。
+      </p>
+    </header>
+
+    {rows.length === 0 ? (
+      <p class="empty">まだ検証の記録がありません。次号から積み上がります。</p>
+    ) : (
+      <>
+        <section class="tally" aria-label="通算">
+          <div class="t-item"><span class="t-n">{count('hit')}</span><span class="t-l">想定どおり</span></div>
+          <div class="t-item"><span class="t-n">{count('partial')}</span><span class="t-l">部分的</span></div>
+          <div class="t-item"><span class="t-n">{count('miss')}</span><span class="t-l">想定と違った</span></div>
+          <div class="t-item"><span class="t-n">{count('pending')}</span><span class="t-l">持ち越し</span></div>
+        </section>
+
+        <p class="caveat">
+          判定済み {judged} 件。<strong>件数が少ないうちは、割合に意味はありません。</strong>
+          相場の方向を当てることを目的にした記録ではなく、どの前提が外れやすいかを残すためのものです。
+        </p>
+
+        <ul class="rv-list">
+          {rows.map((r) => (
+            <li class={`rv-row rv-${r.verdict}`}>
+              <div class="rv-meta">
+                <a href={`/reports/${r.slug}/`}>No.{r.no}（{md(r.date)}）</a>
+                <span class="rv-arrow" aria-hidden="true">→</span>
+                <a href={`/reports/${r.of}/`}>{md(r.of)}の号を検証</a>
+                <span class="rv-verdict">{LABEL[r.verdict]}</span>
+              </div>
+              <p class="rv-scenario">{r.scenario}</p>
+              {r.note && <p class="rv-note">{r.note}</p>}
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
+  </div>
+</Base>
+
+<style>
+  .phead { padding: 48px 0 28px; }
+  h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 700; line-height: 1.4; }
+  .deck { font-size: 15.5px; line-height: 1.9; color: var(--ink); margin-top: 16px; max-width: 46em; }
+  .empty { font-size: 14.5px; color: var(--ink); padding: 24px 0 80px; }
+
+  .tally {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line);
+    border-radius: var(--r); overflow: hidden; margin-top: 8px;
+  }
+  .t-item {
+    background: var(--surface); padding: 18px 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .t-n { font-family: var(--sa); font-size: 26px; font-weight: 700; color: var(--ink); }
+  .t-l { font-family: var(--sa); font-size: 11.5px; color: var(--muted); text-align: center; }
+
+  .caveat { font-size: 13px; line-height: 1.9; color: var(--ink); margin: 14px 0 32px; }
+
+  .rv-list { list-style: none; margin: 0; padding: 0 0 80px; display: flex; flex-direction: column; gap: 12px; }
+  .rv-row {
+    background: var(--surface); border: 1px solid var(--line);
+    border-left: 3px solid var(--line-2);
+    border-radius: var(--r); padding: 16px 20px;
+  }
+  .rv-hit { border-left-color: var(--up); }
+  .rv-miss { border-left-color: var(--down); }
+  .rv-partial { border-left-color: var(--accent); }
+
+  .rv-meta {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    font-family: var(--sa); font-size: 12px; color: var(--muted);
+  }
+  .rv-meta a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line-2); }
+  .rv-arrow { color: var(--muted); }
+  .rv-verdict { margin-left: auto; font-weight: 700; color: var(--ink); }
+
+  .rv-scenario { font-size: 15px; font-weight: 500; line-height: 1.7; margin: 10px 0 0; color: var(--ink); }
+  .rv-note { font-size: 13.5px; line-height: 1.9; margin: 8px 0 0; color: var(--ink); }
+
+  @media (max-width: 560px) {
+    .tally { grid-template-columns: repeat(2, 1fr); }
+    .rv-verdict { margin-left: 0; }
+  }
+</style>

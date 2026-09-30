@@ -1,0 +1,73 @@
+---
+/**
+ * 前号のシナリオの答え合わせ。記事の冒頭付近に置く。
+ *
+ * 毎回シナリオを出しているのに、どうなったかを検証しなければ出しっぱなしになる。
+ * **当たった回だけ触れるのでは記録にならない**ので、外れた回も同じ形で出す。
+ * 判定は4値。二択にすると「方向は合ったが経路が違った」が hit に寄る。
+ */
+interface Props {
+  review: {
+    of: string;
+    verdict: 'hit' | 'partial' | 'miss' | 'pending';
+    scenario: string;
+    note?: string;
+  };
+}
+const { review } = Astro.props;
+
+const LABEL = {
+  hit: '想定どおり',
+  partial: '部分的に想定どおり',
+  miss: '想定と違った',
+  pending: '判定は持ち越し',
+} as const;
+
+const [y, m, d] = review.of.split('-');
+const ofLabel = `${Number(m)}/${Number(d)}`;
+---
+
+<aside class={`rv rv-${review.verdict}`} aria-label="前号のシナリオの検証">
+  <div class="rv-head">
+    <span class="rv-tag">答え合わせ</span>
+    <a class="rv-of" href={`/reports/${review.of}/`}>{ofLabel}の号</a>
+    <span class="rv-verdict">{LABEL[review.verdict]}</span>
+  </div>
+  <p class="rv-scenario">{review.scenario}</p>
+  {review.note && <p class="rv-note">{review.note}</p>}
+</aside>
+
+<style>
+  .rv {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line-2);
+    border-radius: var(--r);
+    background: var(--surface);
+    padding: 16px 20px;
+    margin: 28px 0;
+  }
+  /* 当たりだけを目立たせない。外れも同じ重さで出す */
+  .rv-hit { border-left-color: var(--up); }
+  .rv-miss { border-left-color: var(--down); }
+  .rv-partial { border-left-color: var(--accent); }
+
+  .rv-head {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    font-family: var(--sa); font-size: 12px;
+  }
+  .rv-tag { letter-spacing: .14em; color: var(--muted); }
+  .rv-of { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line-2); }
+  .rv-verdict { margin-left: auto; font-weight: 700; color: var(--ink); }
+
+  .rv-scenario {
+    font-size: 15px; font-weight: 500; line-height: 1.7;
+    margin: 10px 0 0; color: var(--ink);
+  }
+  .rv-note {
+    font-size: 13.5px; line-height: 1.9;
+    margin: 8px 0 0; color: var(--ink);
+  }
+  @media (max-width: 560px) {
+    .rv-verdict { margin-left: 0; }
+  }
+</style>

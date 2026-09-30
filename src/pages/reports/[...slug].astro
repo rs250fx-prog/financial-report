@@ -5,6 +5,7 @@ import Snapshot from '../../components/Snapshot.astro';
 import ReportRow from '../../components/ReportRow.astro';
 import Subscribe from '../../components/Subscribe.astro';
 import PriceLadder from '../../components/PriceLadder.astro';
+import ScenarioReview from '../../components/ScenarioReview.astro';
 import { allReports, listReports, dotted, longDate, tagSlug, isoJst } from '../../lib/content';
 import { SITE_URL, SITE_NAME, OPERATOR, PUBLISHER_URL } from '../../config';
 
@@ -118,6 +119,10 @@ const breadcrumbs = [
           </ol>
         </section>
       )}
+
+      {/* 要点の直後、本文の前。前号の見立てがどうなったかを先に示してから
+          その日の話に入る。読み終えたあとの付け足しにしない */}
+      {d.review && <ScenarioReview review={d.review} />}
 
       <PriceLadder levels={d.levels} />
 

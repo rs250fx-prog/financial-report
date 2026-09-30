@@ -1,0 +1,145 @@
+---
+/**
+ * 指標の取得元の公開ページ。
+ *
+ * 原本は docs/SOURCES.md。**片方だけ直さないこと。**
+ *
+ * 数字を出す媒体が取得元を隠すと、読者は検証できない。
+ * 「判断の過程を残す」と掲げている以上、材料を開示する側に立つ。
+ */
+import Base from '../layouts/Base.astro';
+import { listReports } from '../lib/content';
+import { SITE_NAME } from '../config';
+
+const reports = await listReports();
+const latest = reports[0];
+
+// FRED から取るもの。遅れは実測値
+const FRED = [
+  { name: '実質金利（TIPS10年）', id: 'DFII10', lag: '2営業日' },
+  { name: 'VIX', id: 'VIXCLS', lag: '1営業日' },
+  { name: '米10年債利回り', id: 'DGS10', lag: '2営業日' },
+  { name: '米30年債利回り', id: 'DGS30', lag: '2営業日' },
+  { name: '米2年債利回り', id: 'DGS2', lag: '2営業日' },
+  { name: 'S&P 500', id: 'SP500', lag: '1営業日' },
+  { name: '期待インフレ率（10年BEI）', id: 'T10YIE', lag: '2営業日' },
+];
+
+const OTHERS = [
+  { name: '金（XAU/USD）', src: 'USAGOLD 日次レポート', href: 'https://www.usagold.com/daily-precious-metals-market-report/', note: '出所により水準が割れるため、系列を固定している' },
+  { name: 'WTI・Brent原油', src: '当日の報道（複数社で突き合わせ）', href: '', note: '公的データは約1週間遅れるため、確定値の裏取りにのみ使う' },
+  { name: 'ドル指数 DXY', src: '当日の報道（複数社で突き合わせ）', href: '', note: 'ICEの指数のため公的データベースに無い' },
+  { name: '日経225', src: '日本経済新聞', href: 'https://www.nikkei.com/marketdata/quote/NK225/', note: '' },
+  { name: 'BTC', src: 'CoinDesk', href: 'https://www.coindesk.com/', note: '' },
+];
+---
+
+<Base
+  title="指標の取得元"
+  description={`${SITE_NAME}（定点）が各指標をどこから取っているかの一覧。実質金利・VIX・米金利はFREDの系列IDまで明示し、反映の遅れも公開しています。数字を検証できる状態にしておくための資料です。`}
+  breadcrumbs={[{ name: '指標の取得元' }]}
+  quotes={latest?.data.snapshot ?? []}
+  mastDate={latest?.data.date}
+  mastNo={latest?.data.no}
+>
+  <div class="wrap">
+    <header class="phead">
+      <h1>指標の取得元</h1>
+      <p class="deck">
+        レポートに出てくる数字を、どこから取っているかの一覧です。同じ指標を同じ形式で記録し続けることを掲げている以上、<strong>取得元が日によって変われば、並べた数字は比較できなくなります。</strong>ここを固定し、公開しています。
+      </p>
+    </header>
+
+    <div class="prose">
+      <h2>原則</h2>
+      <ul>
+        <li><strong>系列を1つに固定する。</strong>同じ指標を日によって別の出所から取りません</li>
+        <li><strong>値には必ず「いつ時点か」を添える。</strong>日付の無い数字は検証できません</li>
+        <li><strong>取れなければ「未確認」と書く。</strong>近い数字で埋めません</li>
+        <li>出所が食い違ったら、日付と具体性のあるほうを採ります。決まらなければ両方を併記し、未確認として扱います</li>
+      </ul>
+
+      <p>
+        実際に、同じ日の金の終値が4つの出所で 4,290 / 4,304 / 4,314 / 4,318 ドルと割れたことがあります。前号と同じ系列を採ることで決着させました。<strong>水準そのものより、同じものさしで測り続けることのほうを優先します。</strong>
+      </p>
+
+      <h2>FRED（セントルイス連銀）から取るもの</h2>
+      <p>系列IDを明記します。誰でも同じ値を確認できます。</p>
+
+      <div class="table-scroll">
+        <table class="src-table">
+          <thead>
+            <tr><th>指標</th><th>系列ID</th><th>反映の遅れ</th></tr>
+          </thead>
+          <tbody>
+            {FRED.map((f) => (
+              <tr>
+                <td>{f.name}</td>
+                <td class="mono">
+                  <a href={`https://fred.stlouisfed.org/series/${f.id}`} target="_blank" rel="noopener noreferrer">{f.id}</a>
+                </td>
+                <td>{f.lag}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h3>遅れの扱い</h3>
+      <p>
+        これらは確定値のため、公表までに1〜2営業日かかります。<strong>遅れを理由に空欄にはしません。</strong>「9/28時点」と添えて載せ、翌号で確定値に差し替えます。いつの値かが分かれば、読者は自分で判断できます。
+      </p>
+
+      <h2>報道・専門サイトから取るもの</h2>
+      <p>
+        公的データベースに無い、あるいは反映が遅すぎて日次に使えない指標です。<strong>必ず複数の記事で突き合わせます。</strong>1社だけを信用しません。
+      </p>
+
+      <div class="table-scroll">
+        <table class="src-table">
+          <thead>
+            <tr><th>指標</th><th>取得元</th><th>備考</th></tr>
+          </thead>
+          <tbody>
+            {OTHERS.map((o) => (
+              <tr>
+                <td>{o.name}</td>
+                <td>{o.href ? <a href={o.href} target="_blank" rel="noopener noreferrer">{o.src}</a> : o.src}</td>
+                <td class="note">{o.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>なぜ公開しているか</h2>
+      <p>
+        数字を出す媒体が取得元を書かないと、読者はその数字を検証できません。結論だけを配る媒体にはしない、という方針を掲げている以上、<strong>材料を開示する側に立ちます。</strong>
+      </p>
+      <p>取得元を変更した場合は、この一覧とレポート本文の両方に反映します。</p>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .phead { padding: 48px 0 28px; }
+  h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 700; line-height: 1.4; }
+  .deck { font-size: 15.5px; line-height: 1.9; color: var(--ink); margin-top: 16px; max-width: 46em; }
+
+  .table-scroll { overflow-x: auto; margin: 20px 0 8px; }
+  .src-table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  .src-table th, .src-table td {
+    text-align: left; padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .src-table th {
+    font-family: var(--sa); font-size: 12px; letter-spacing: .1em;
+    color: var(--muted); font-weight: 700;
+    border-bottom: 1px solid var(--line-2);
+    white-space: nowrap;
+  }
+  .src-table td { line-height: 1.7; }
+  .mono { font-family: var(--sa); white-space: nowrap; }
+  .note { color: var(--ink); font-size: 13.5px; }
+</style>

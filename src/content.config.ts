@@ -66,6 +66,33 @@ const reports = defineCollection({
       )
       .default([]),
 
+    /**
+     * 前号のシナリオの答え合わせ。
+     *
+     * 週次は bull / base / bear、日次は Next Flow ①②③ として毎回シナリオを
+     * 出している。**それがどうなったかを検証しなければ、出しっぱなしになる。**
+     * 「結論だけを配る媒体にはしない」と掲げている以上、自分の見立ても記録に残す。
+     *
+     * 予測の提供ではなく、過去の記述の検証である。投資助言には当たらない。
+     *
+     * verdict:
+     *   hit     … 想定した経路をたどった
+     *   partial … 方向は合ったが、経路や水準が違った
+     *   miss    … 想定と違う動きになった
+     *   pending … まだ判定できない（材料待ち）
+     */
+    review: z
+      .object({
+        /** 検証対象の号の日付 'YYYY-MM-DD' */
+        of: z.string(),
+        verdict: z.enum(['hit', 'partial', 'miss', 'pending']),
+        /** どのシナリオを検証したか。前号の見出しをそのまま引く */
+        scenario: z.string(),
+        /** なぜその判定にしたか。1〜2文 */
+        note: z.string().default(''),
+      })
+      .optional(),
+
     tags: z.array(z.string()).default([]),
 
     // --- SEO ---

@@ -122,6 +122,28 @@ def check(p, seen_no):
     else:
         warn(p, "levels（テクニカル・レベル）が空です。定点観測の中核なので埋めることを推奨")
 
+    # 前号のシナリオの答え合わせ。
+    # 出しっぱなしを防ぐのが目的なので、無ければ警告する。
+    # ただし第1号には検証対象が無いため、強制はしない。
+    if "review:" in fm:
+        of = re.search(r'^\s*of:\s*"?(\d{4}-\d{2}-\d{2})"?\s*$', fm, re.M)
+        vd = re.search(r'^\s*verdict:\s*"?(\w+)"?\s*$', fm, re.M)
+        sc = re.search(r'^\s*scenario:\s*"(.*)"\s*$', fm, re.M)
+        if not of:
+            err(p, "review の of が YYYY-MM-DD ではありません")
+        elif of.group(1) >= p.stem:
+            err(p, f"review の of（{of.group(1)}）が自号以降の日付です。検証対象は前号以前")
+        elif not (REPORTS / f"{of.group(1)}.md").exists():
+            err(p, f"review の of（{of.group(1)}）に対応する号がありません")
+        if not vd:
+            err(p, "review の verdict がありません")
+        elif vd.group(1) not in ("hit", "partial", "miss", "pending"):
+            err(p, f"review の verdict が不正です: {vd.group(1)}")
+        if not sc or not sc.group(1).strip():
+            err(p, "review の scenario が空です。前号のどの見立てを検証したか書く")
+    else:
+        warn(p, "review（前号の答え合わせ）がありません。第1号以外は入れること")
+
     hl = re.search(r'headline:\s*\{\s*value:\s*"([^"]*)",\s*dir:\s*(\w+)', fm)
     if not hl:
         warn(p, "headline がありません。一覧の右端が空になります")
