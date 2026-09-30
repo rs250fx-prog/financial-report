@@ -27,6 +27,11 @@ except Exception:
 
 REPORTS = Path("src/content/reports")
 WEEKLY = Path("src/content/weekly")
+
+# シナリオの答え合わせ（review）を必須にする開始日。
+# これより前の号は、結果が出たあとに書くことになり検証として成立しないため、
+# 遡らない。境界を定数で持っておかないと、消せない警告が並び続ける。
+REVIEW_SINCE = "2026-09-30"
 WD = "月火水木金土日"
 
 errors = []
@@ -124,8 +129,14 @@ def check(p, seen_no):
 
     # 前号のシナリオの答え合わせ。
     # 出しっぱなしを防ぐのが目的なので、無ければ警告する。
-    # ただし第1号には検証対象が無いため、強制はしない。
-    if "review:" in fm:
+    #
+    # REVIEW_SINCE より前の号は対象外。結果を知ったあとで書いた検証は
+    # 検証にならないため、遡って埋めない方針にした。**その号にも警告を出し続けると、
+    # 消せない警告が常時7件並び、警告そのものが読まれなくなる。**
+    # 運用を始めた日を境界として持つ。
+    if p.stem < REVIEW_SINCE:
+        pass
+    elif "review:" in fm:
         of = re.search(r'^\s*of:\s*"?(\d{4}-\d{2}-\d{2})"?\s*$', fm, re.M)
         vd = re.search(r'^\s*verdict:\s*"?(\w+)"?\s*$', fm, re.M)
         sc = re.search(r'^\s*scenario:\s*"(.*)"\s*$', fm, re.M)
@@ -142,7 +153,7 @@ def check(p, seen_no):
         if not sc or not sc.group(1).strip():
             err(p, "review の scenario が空です。前号のどの見立てを検証したか書く")
     else:
-        warn(p, "review（前号の答え合わせ）がありません。第1号以外は入れること")
+        warn(p, "review（前号の答え合わせ）がありません。必ず入れること")
 
     hl = re.search(r'headline:\s*\{\s*value:\s*"([^"]*)",\s*dir:\s*(\w+)', fm)
     if not hl:
