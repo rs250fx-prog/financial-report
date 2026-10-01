@@ -5,8 +5,13 @@
 
 ## 仕様書
 
+**進行中の作業と次にやることは [`docs/HANDOVER.md`](docs/HANDOVER.md)。**引き継ぐ場合はここから読む。
+
 構造・設計判断・運用ルールは [`docs/SPEC.md`](docs/SPEC.md) にまとめてある。
 拡張や修正の前にそちらを読むこと。新規ページのSEO要件も同書の第9章にある。
+
+指標の取得元は [`docs/SOURCES.md`](docs/SOURCES.md)（公開版は `/sources/`）。
+**数字を書く前に参照すること。**取得元を変えたら両方を直す。
 
 定期実行に登録しているプロンプトの原本は [`docs/ROUTINES.md`](docs/ROUTINES.md)。
 **ルーティン側を直したら、こちらも同じコミットで直す。**
