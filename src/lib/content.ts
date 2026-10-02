@@ -84,6 +84,41 @@ export async function tagCounts(): Promise<
 }
 
 /**
+ * 関連する号。タグの重なりで選ぶ。
+ *
+ * 「XAU/USD」「資金フロー」のように全号に付くタグは区別に効かないため、
+ * 付いている号が少ないタグほど重く数える。同点なら日付の近い号を先にする。
+ */
+export function relatedReports(entry: Report, all: Report[], n = 3): Report[] {
+  const df = new Map<string, number>();
+  for (const r of all) {
+    for (const t of r.data.tags) df.set(t, (df.get(t) ?? 0) + 1);
+  }
+  const mine = new Set(entry.data.tags);
+  const day = (iso: string) => Date.parse(iso) / 86_400_000;
+  return all
+    .filter((r) => r.id !== entry.id)
+    .map((r) => ({
+      r,
+      score: r.data.tags.reduce(
+        (s, t) => (mine.has(t) ? s + 1 / (df.get(t) ?? 1) : s),
+        0,
+      ),
+      gap: Math.abs(day(r.data.date) - day(entry.data.date)),
+    }))
+    .sort((a, b) => b.score - a.score || a.gap - b.gap)
+    .slice(0, n)
+    .map((x) => x.r);
+}
+
+/**
+ * 見出しの先頭にある日付（"2026/10/01（木）｜"）を落とす。
+ * 日付を別に表示している狭い一覧で、同じ情報を二度出さないため。
+ */
+export const shortTitle = (title: string) =>
+  title.replace(/^\d{4}\/\d{1,2}\/\d{1,2}（.）\s*[｜|]\s*/, '');
+
+/**
  * 表示用の updated（"13:13 JST" や "2026-09-22 15:12 JST（遡及作成）"）から
  * ISO8601（JST）を組み立てる。
  *

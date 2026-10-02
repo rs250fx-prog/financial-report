@@ -2,11 +2,13 @@
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Snapshot from '../../components/Snapshot.astro';
-import ReportRow from '../../components/ReportRow.astro';
 import Subscribe from '../../components/Subscribe.astro';
 import PriceLadder from '../../components/PriceLadder.astro';
 import ScenarioReview from '../../components/ScenarioReview.astro';
-import { allReports, listReports, dotted, longDate, tagSlug, isoJst } from '../../lib/content';
+import {
+  allReports, listReports, listWeekly, relatedReports, shortTitle,
+  dotted, longDate, weekdayJa, tagSlug, isoJst,
+} from '../../lib/content';
 import { SITE_URL, SITE_NAME, OPERATOR, PUBLISHER_URL } from '../../config';
 
 export async function getStaticPaths() {
@@ -26,7 +28,11 @@ const visible = await listReports();
 const idx = visible.findIndex((e) => e.id === entry.id);
 const newer = idx > 0 ? visible[idx - 1] : undefined;
 const older = idx >= 0 && idx < visible.length - 1 ? visible[idx + 1] : undefined;
-const alsoRead = visible.filter((e) => e.id !== entry.id).slice(0, 3);
+const related = relatedReports(entry, visible, 3);
+// この号を含む週次まとめ。あれば関連記事の末尾に添える
+const weekly = (await listWeekly()).find(
+  (w) => d.date >= w.data.start && d.date <= w.data.end,
+);
 
 // 金融情報は YMYL 領域にあたるため、発行元・発行日・出典を
 // 構造化データでも明示する
@@ -80,6 +86,11 @@ const breadcrumbs = [
   mastNo={d.no}
 >
   <div class="wrap">
+    {/* 記事の中身はすべて本文と同じ幅に揃える。広い画面では右に列を作り、
+        数値指標と関連記事を置く。狭い画面では数値指標を記事の上に残し、
+        関連記事だけが記事の下へ回る */}
+    <div class="layout">
+    <div class="main">
     <article>
       <nav class="crumb" aria-label="パンくず">
         <a href="/">ホーム</a>
@@ -109,7 +120,9 @@ const breadcrumbs = [
         )}
       </header>
 
-      <Snapshot quotes={d.snapshot} />
+      <div class="snap-inline">
+        <Snapshot quotes={d.snapshot} cols={4} />
+      </div>
 
       {d.points.length > 0 && (
         <section class="points" aria-label="本日の要点">
@@ -145,25 +158,119 @@ const breadcrumbs = [
         </a>
       ) : <span></span>}
     </nav>
+    </div>
 
-    {alsoRead.length > 0 && (
-      <section class="sec">
-        <div class="sec-head">
-          <h2>ほかのレポート</h2>
-          <span class="spacer"></span>
-          <a href="/reports/">一覧へ →</a>
+    <aside class="rail">
+      <div class="rail-in">
+        <div class="snap-rail">
+          <Snapshot quotes={d.snapshot} variant="list" />
         </div>
-        <div>
-          {alsoRead.map((e) => <ReportRow entry={e} />)}
-        </div>
-      </section>
-    )}
+
+        {(related.length > 0 || weekly) && (
+          <section class="rel">
+            <div class="rel-head">
+              <h2>関連記事</h2>
+              <a href="/reports/">一覧へ →</a>
+            </div>
+            <ul>
+              {related.map((e) => (
+                <li>
+                  <a href={`/reports/${e.id}/`}>
+                    <span class="m num">{dotted(e.data.date)}（{weekdayJa(e.data.date)}）No. {e.data.no}</span>
+                    <span class="t">{shortTitle(e.data.title)}</span>
+                  </a>
+                </li>
+              ))}
+              {weekly && (
+                <li>
+                  <a href={`/weekly/${weekly.id}/`}>
+                    <span class="m num">週次まとめ WEEK {weekly.data.week}</span>
+                    <span class="t">{weekly.data.title}</span>
+                  </a>
+                </li>
+              )}
+            </ul>
+          </section>
+        )}
+      </div>
+    </aside>
+    </div>
 
     <Subscribe />
   </div>
 </Base>
 
 <style>
+  /* 本文の幅（.prose の 68ch が 17px の Inter で約729px）。
+     数値指標・要点・答え合わせ・価格レベルもここに揃える */
+  .layout { --measure: 730px; }
+  .main, .rail { max-width: var(--measure); }
+  .snap-rail { display: none; }
+
+  @media (min-width: 1080px) {
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
+      column-gap: 56px;
+    }
+    .rail { max-width: none; padding-top: 34px; }
+    .snap-inline { display: none; }
+    .snap-rail { display: block; }
+  }
+  /* 読み進めても数値が見えるよう固定する。列の中身が画面の高さに
+     収まらないときは固定しない（下が切れて読めなくなる） */
+  @media (min-width: 1080px) and (min-height: 840px) {
+    .rail-in { position: sticky; top: 24px; }
+  }
+
+  .rel { padding: 30px 0 56px; }
+  .rel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .rel-head h2 {
+    font-family: var(--sa);
+    font-size: 10.5px;
+    font-weight: 400;
+    letter-spacing: .16em;
+    color: var(--muted);
+  }
+  .rel-head a {
+    font-family: var(--sa);
+    font-size: 11.5px;
+    color: var(--accent);
+  }
+  .rel ul { list-style: none; }
+  .rel li { border-bottom: 1px solid var(--line); }
+  .rel li:last-child { border-bottom: 0; }
+  .rel li a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 0;
+  }
+  .rel .m {
+    font-family: var(--sa);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .rel .t {
+    font-size: 13.5px;
+    line-height: 1.65;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    transition: color .16s;
+  }
+  .rel li a:hover .t { color: var(--accent); }
+  @media (min-width: 1080px) {
+    .rel { padding: 26px 0 0; }
+  }
+
   article { padding-top: 34px; }
   .crumb {
     display: flex;
@@ -295,6 +402,4 @@ const breadcrumbs = [
     .pager { grid-template-columns: 1fr; }
     .pg.next { text-align: left; }
   }
-
-  .sec { padding: 0 0 60px; border-bottom: 1px solid var(--line); }
 </style>
