@@ -29,8 +29,10 @@ const OTHERS = [
   { name: '金（XAU/USD）', src: 'USAGOLD 日次レポート', href: 'https://www.usagold.com/daily-precious-metals-market-report/', note: '出所により水準が割れるため、系列を固定している' },
   { name: 'WTI・Brent原油', src: '当日の報道（複数社で突き合わせ）', href: '', note: '公的データは約1週間遅れるため、確定値の裏取りにのみ使う' },
   { name: 'ドル指数 DXY', src: '当日の報道（複数社で突き合わせ）', href: '', note: 'ICEの指数のため公的データベースに無い' },
-  { name: '日経225', src: '日本経済新聞', href: 'https://www.nikkei.com/marketdata/quote/NK225/', note: '' },
-  { name: 'BTC', src: 'CoinDesk', href: 'https://www.coindesk.com/', note: '' },
+  { name: '日経225', src: '日経平均プロフィル', href: 'https://indexes.nikkei.co.jp/en/nkave/archives/data', note: '日本経済新聞社の公式データ' },
+  { name: '日本10年債利回り', src: '財務省 国債金利情報', href: 'https://www.mof.go.jp/jgbs/reference/interest_rate/index.htm', note: '公的な確定値' },
+  { name: 'BTC', src: 'CoinGecko（CoinDeskで突き合わせ）', href: 'https://www.coingecko.com/en/coins/bitcoin', note: '24時間取引で終値が決まらないため、UTC 0:00（日本時間9:00）の値に固定している' },
+  { name: '日経VI', src: '日経平均プロフィル', href: 'https://indexes.nikkei.co.jp/nkave/index/profile?idx=nk225vi', note: '前日終値は、当日値と前日比からの逆算。逆算であることを本文に書く' },
 ];
 ---
 
@@ -90,9 +92,9 @@ const OTHERS = [
         これらは確定値のため、公表までに1〜2営業日かかります。<strong>遅れを理由に空欄にはしません。</strong>「9/28時点」と添えて載せ、翌号で確定値に差し替えます。いつの値かが分かれば、読者は自分で判断できます。
       </p>
 
-      <h2>報道・専門サイトから取るもの</h2>
+      <h2>FRED以外から取るもの</h2>
       <p>
-        公的データベースに無い、あるいは反映が遅すぎて日次に使えない指標です。<strong>必ず複数の記事で突き合わせます。</strong>1社だけを信用しません。
+        FREDに無い、あるいは反映が遅すぎて日次に使えない指標です。公的機関や指数の算出元に日次の値があるものは、そこから取ります。報道から取るものは<strong>必ず複数の記事で突き合わせます。</strong>1社だけを信用しません。
       </p>
 
       <div class="table-scroll">

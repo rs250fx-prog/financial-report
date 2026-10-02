@@ -57,12 +57,47 @@ CSVはキャッシュされる。素で叩くと最新1日分が落ちた結果�
 | 金（XAU/USD） | [USAGOLD 日次レポート](https://www.usagold.com/daily-precious-metals-market-report/) | 出所により28ドル幅で割れる。**前号と同じ系列を採る** |
 | WTI・Brent原油 | 当日の報道（CNBC・Investrade等） | FRED `DCOILWTICO` は約1週間遅れ。**確定値の裏取りにのみ使う** |
 | ドル指数 DXY | 当日の報道（FXStreet等） | ICEの指数のためFREDに無い。`DTWEXBGS` は**広義ドル指数で別物。代用しない** |
-| 日経225 | [日経公式](https://www.nikkei.com/marketdata/quote/NK225/) | |
-| BTC | [CoinDesk](https://www.coindesk.com/) | |
-| 日経VI | 大阪取引所・日経 | |
+| 日経225 | [日経平均プロフィル（Historical Data）](https://indexes.nikkei.co.jp/en/nkave/archives/data) | 始値・高値・安値・終値が当日中に載る。[日経電子版](https://www.nikkei.com/marketdata/quote/NK225/)は画面が重く、素のテキストから値を読めない |
+| 日本10年債利回り | [財務省 国債金利情報（jgbcm.csv）](https://www.mof.go.jp/jgbs/reference/interest_rate/jgbcm.csv) | 公的な確定値。FREDに無い。**当月分のCSVで、基準日は和暦（`R8.10.1`）** |
+| BTC | [CoinGecko 日次](https://www.coingecko.com/en/coins/bitcoin)（[CoinDesk](https://www.coindesk.com/)で突き合わせ） | 24時間取引で「終値」が決まらないため、**UTC 0:00（JST 9:00）の値に固定する** |
+| 日経VI | [日経平均プロフィル（日経平均VI）](https://indexes.nikkei.co.jp/nkave/index/profile?idx=nk225vi) | **前日終値は、当日値と前日比からの逆算。**逆算であることを本文に書く |
 
 報道から取る指標は、**必ず複数の記事で突き合わせる。**1社だけを信用しない。
 過去に、ある価格サイトが金2,048ドル・DXY 103.45という、他のどの出所とも矛盾する値を返した。
+
+### 取り方の注意
+
+**日本10年債**：CSVは Shift_JIS。最終行ではなく、**基準日の入った最後の行**を読む（末尾に空行と注記がある）。
+10/2 朝 9:38 の時点で 10/1 分が載っていた（実測1回。反映時刻は継続して確かめる）。
+
+```bash
+curl -s https://www.mof.go.jp/jgbs/reference/interest_rate/jgbcm.csv | iconv -f SHIFT_JIS -t UTF-8
+```
+
+**BTC**：次のAPIが日次の値を返す。鍵は要らない。`prices` の各要素は `[UNIX時刻ミリ秒, 価格]` で、
+時刻が UTC 0:00 ちょうどの行がその日の基準値。**末尾の1行は取得時点の値で、基準値ではない。**
+
+```bash
+curl -s "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=5&interval=daily"
+```
+
+D日の記事には、D日 9:00 JST の値（＝D-1日のUTC終値）を「10/2 09:00 JST時点」の形で書く。
+変化率は24時間前の基準値との比で出す。
+
+**日経VI**：公式ページが出すのは「現在値・前日比・始値・高値・安値」で、日次の終値一覧は確認できていない。
+寄り付き後に開くと、**現在値 − 前日比 ＝ 前日終値**で逆算できる（10/2 9:38：27.18 − 4.26 ＝ 22.92）。
+寄り付き前に開いた場合は現在値がそのまま前日終値になるはずだが、未検証。
+
+**金の終値**：USAGOLD の日次レポートは**米国の朝の値**で、終値ではない。ただし「前日比」が載るので、
+**当日の値 − 前日比 ＝ 前日の終値**を逆算できる（10/1：4,167.00 − 10.80 ＝ 4,156.20。別ソースの終値4,155.93と一致）。
+D日の記事が要る D-1日の終値は、D日の朝には USAGOLD からは取れない。時点つきの報道値（Reuters など）を書き、
+終値は翌号で逆算値と突き合わせて確定する。10/1号では日中の一部の時間帯の値幅を「日中の値幅」と書いてしまい、
+高値4,219ドルと終値4,156ドルを落とした（10/2に訂正）。
+
+**Brentの限月交代**：月末に期近が交代する。9/30は11月限の最終日で、11月限103.50ドル・12月限98.03ドルと
+5ドル以上の差があった。**交代日をまたぐ変化率は同じ限月どうしで出し、本文に限月を書く。**
+
+**Stooq は使えない。**CSVのURLがJavaScriptによるブラウザ検証を挟むようになり、スクリプトから取れない。
 
 ---
 
@@ -85,3 +120,4 @@ python tools/fetch-indicators.py
 | 日付 | 内容 |
 |---|---|
 | 2026-09-30 | 作成。実質金利とVIXがFREDで取れることを確認し、系列ごとの遅れを実測して記載した |
+| 2026-10-02 | 日本10年債（財務省）・日経VI（日経平均プロフィル）の取得元を定めた。どちらも未確認が続いていた。BTCは CoinGecko の日次（UTC 0:00）に固定し、CoinDesk は突き合わせに回した。レンジ表記をやめて単一値＋時点にするため。日経225は日経平均プロフィルへ変更。金の終値の逆算、Brentの限月交代、Stooq が使えないことを注意点として追記 |
