@@ -185,6 +185,37 @@ button { font: inherit; }
   white-space: nowrap;
 }
 
+/* 記事ページ（日次・週次）の骨組み。
+   記事の中身はすべて本文と同じ幅に揃える。--measure は .prose の 68ch
+   （17px の Inter で約729px）に合わせた値。広い画面では右に列を作り、
+   数値と関連する記事を置く。狭い画面では右列は記事の下へ回る */
+.article-layout { --measure: 730px; }
+.article-main,
+.article-rail { max-width: var(--measure); }
+.rail-only { display: none; }
+
+@media (min-width: 1080px) {
+  .article-layout {
+    display: grid;
+    grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
+    column-gap: 56px;
+  }
+  .article-rail { max-width: none; padding-top: 34px; }
+  /* 読み進めても数値が見えるよう固定する。top は上部に固定されるナビ
+     （52px＋上下の罫線）の下に 20px 空ける。列の中身が画面の高さに
+     収まらないときは、下が切れて読めなくならないよう列の中で送れるようにする */
+  .article-rail-in {
+    position: sticky;
+    top: 74px;
+    max-height: calc(100vh - 94px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  /* 右列がある幅でだけ出すもの／右列が無い幅でだけ出すもの */
+  .rail-only { display: block; }
+  .inline-only { display: none; }
+}
+
 /* セクション見出し（罫線つきの小さいラベル） */
 .sec-head {
   display: flex;

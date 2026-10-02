@@ -1,0 +1,104 @@
+---
+/**
+ * 記事ページの右列に置く記事の一覧（日次の「関連記事」、週次の「この週の日次レポート」）。
+ *
+ * 広い画面では見出しを clamp 行で切る。右列を画面の高さに収めるため。
+ * 狭い画面では記事の下に回り、高さの制約が無いので切らない。
+ */
+interface Item {
+  href: string;
+  /** 日付や号数など、見出しの上に小さく出す行 */
+  meta: string;
+  title: string;
+  /** meta の右端に出す値（その号の代表的な変化率など） */
+  value?: { text: string; dir: 'up' | 'down' | 'flat' };
+}
+interface Props {
+  heading: string;
+  items: Item[];
+  moreHref?: string;
+  moreLabel?: string;
+  clamp?: 1 | 2;
+}
+const { heading, items, moreHref, moreLabel = '一覧へ →', clamp = 2 } = Astro.props;
+---
+
+{items.length > 0 && (
+  <section class="rl" style={`--clamp:${clamp}`}>
+    <div class="rl-head">
+      <h2>{heading}</h2>
+      {moreHref && <a href={moreHref}>{moreLabel}</a>}
+    </div>
+    <ul>
+      {items.map((it) => (
+        <li>
+          <a href={it.href}>
+            <span class="m">
+              <span class="num">{it.meta}</span>
+              {it.value && <span class:list={['num', 'v', it.value.dir]}>{it.value.text}</span>}
+            </span>
+            <span class="t">{it.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<style>
+  .rl { padding: 30px 0 56px; }
+  .rl-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .rl-head h2 {
+    font-family: var(--sa);
+    font-size: 10.5px;
+    font-weight: 400;
+    letter-spacing: .16em;
+    color: var(--muted);
+  }
+  .rl-head a {
+    font-family: var(--sa);
+    font-size: 11.5px;
+    color: var(--accent);
+  }
+  ul { list-style: none; }
+  li { border-bottom: 1px solid var(--line); }
+  li:last-child { border-bottom: 0; }
+  li a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 0;
+  }
+  .m {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .m .v { font-weight: 500; }
+  .m .v.up { color: var(--up); }
+  .m .v.down { color: var(--down); }
+  .t {
+    font-size: 13.5px;
+    line-height: 1.65;
+    transition: color .16s;
+  }
+  li a:hover .t { color: var(--accent); }
+
+  @media (min-width: 1080px) {
+    .rl { padding: 26px 0 0; }
+    .t {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: var(--clamp);
+      overflow: hidden;
+    }
+  }
+</style>

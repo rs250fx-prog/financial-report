@@ -42,9 +42,11 @@ const { rows } = Astro.props;
 <style>
   .perf { margin: 34px 0 44px; }
   ul { list-style: none; }
+  /* 1段目に銘柄・値・変化、2段目に寸評。記事ページは本文幅（730px）なので、
+     寸評を4列目に置くと1行が20字ほどになり細かく折り返す */
   li {
     display: grid;
-    grid-template-columns: 150px 120px 88px 1fr;
+    grid-template-columns: 150px 120px 1fr;
     gap: 6px 16px;
     align-items: baseline;
     padding: 14px 0;
@@ -74,6 +76,7 @@ const { rows } = Astro.props;
   .change.down { color: var(--down); }
   .change.flat { color: var(--muted); }
   .note {
+    grid-column: 2 / -1;
     font-size: 14px;
     line-height: 1.8;
     color: var(--ink-2);

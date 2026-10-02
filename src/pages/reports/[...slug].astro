@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Snapshot from '../../components/Snapshot.astro';
 import Subscribe from '../../components/Subscribe.astro';
+import RailList from '../../components/RailList.astro';
 import PriceLadder from '../../components/PriceLadder.astro';
 import ScenarioReview from '../../components/ScenarioReview.astro';
 import {
@@ -33,6 +34,20 @@ const related = relatedReports(entry, visible, 3);
 const weekly = (await listWeekly()).find(
   (w) => d.date >= w.data.start && d.date <= w.data.end,
 );
+const railItems = [
+  ...related.map((e) => ({
+    href: `/reports/${e.id}/`,
+    meta: `${dotted(e.data.date)}（${weekdayJa(e.data.date)}）No. ${e.data.no}`,
+    title: shortTitle(e.data.title),
+  })),
+  ...(weekly
+    ? [{
+        href: `/weekly/${weekly.id}/`,
+        meta: `週次まとめ WEEK ${weekly.data.week}`,
+        title: weekly.data.title,
+      }]
+    : []),
+];
 
 // 金融情報は YMYL 領域にあたるため、発行元・発行日・出典を
 // 構造化データでも明示する
@@ -89,8 +104,8 @@ const breadcrumbs = [
     {/* 記事の中身はすべて本文と同じ幅に揃える。広い画面では右に列を作り、
         数値指標と関連記事を置く。狭い画面では数値指標を記事の上に残し、
         関連記事だけが記事の下へ回る */}
-    <div class="layout">
-    <div class="main">
+    <div class="article-layout">
+    <div class="article-main">
     <article>
       <nav class="crumb" aria-label="パンくず">
         <a href="/">ホーム</a>
@@ -120,7 +135,7 @@ const breadcrumbs = [
         )}
       </header>
 
-      <div class="snap-inline">
+      <div class="inline-only">
         <Snapshot quotes={d.snapshot} cols={4} />
       </div>
 
@@ -160,38 +175,12 @@ const breadcrumbs = [
     </nav>
     </div>
 
-    <aside class="rail">
-      <div class="rail-in">
-        <div class="snap-rail">
+    <aside class="article-rail">
+      <div class="article-rail-in">
+        <div class="rail-only">
           <Snapshot quotes={d.snapshot} variant="list" />
         </div>
-
-        {(related.length > 0 || weekly) && (
-          <section class="rel">
-            <div class="rel-head">
-              <h2>関連記事</h2>
-              <a href="/reports/">一覧へ →</a>
-            </div>
-            <ul>
-              {related.map((e) => (
-                <li>
-                  <a href={`/reports/${e.id}/`}>
-                    <span class="m num">{dotted(e.data.date)}（{weekdayJa(e.data.date)}）No. {e.data.no}</span>
-                    <span class="t">{shortTitle(e.data.title)}</span>
-                  </a>
-                </li>
-              ))}
-              {weekly && (
-                <li>
-                  <a href={`/weekly/${weekly.id}/`}>
-                    <span class="m num">週次まとめ WEEK {weekly.data.week}</span>
-                    <span class="t">{weekly.data.title}</span>
-                  </a>
-                </li>
-              )}
-            </ul>
-          </section>
-        )}
+        <RailList heading="関連記事" items={railItems} moreHref="/reports/" />
       </div>
     </aside>
     </div>
@@ -201,83 +190,6 @@ const breadcrumbs = [
 </Base>
 
 <style>
-  /* 本文の幅（.prose の 68ch が 17px の Inter で約729px）。
-     数値指標・要点・答え合わせ・価格レベルもここに揃える */
-  .layout { --measure: 730px; }
-  .main, .rail { max-width: var(--measure); }
-  .snap-rail { display: none; }
-
-  @media (min-width: 1080px) {
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
-      column-gap: 56px;
-    }
-    .rail { max-width: none; padding-top: 34px; }
-    .snap-inline { display: none; }
-    .snap-rail { display: block; }
-  }
-  /* 読み進めても数値が見えるよう固定する。top は上部に固定されるナビ
-     （52px＋上下の罫線）の下に 20px 空ける。列の中身が画面の高さに
-     収まらないときは、下が切れて読めなくならないよう列の中で送れるようにする */
-  @media (min-width: 1080px) {
-    .rail-in {
-      position: sticky;
-      top: 74px;
-      max-height: calc(100vh - 94px);
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-  }
-
-  .rel { padding: 30px 0 56px; }
-  .rel-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--line-2);
-  }
-  .rel-head h2 {
-    font-family: var(--sa);
-    font-size: 10.5px;
-    font-weight: 400;
-    letter-spacing: .16em;
-    color: var(--muted);
-  }
-  .rel-head a {
-    font-family: var(--sa);
-    font-size: 11.5px;
-    color: var(--accent);
-  }
-  .rel ul { list-style: none; }
-  .rel li { border-bottom: 1px solid var(--line); }
-  .rel li:last-child { border-bottom: 0; }
-  .rel li a {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 12px 0;
-  }
-  .rel .m {
-    font-family: var(--sa);
-    font-size: 11px;
-    color: var(--muted);
-  }
-  .rel .t {
-    font-size: 13.5px;
-    line-height: 1.65;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-    transition: color .16s;
-  }
-  .rel li a:hover .t { color: var(--accent); }
-  @media (min-width: 1080px) {
-    .rel { padding: 26px 0 0; }
-  }
-
   article { padding-top: 34px; }
   .crumb {
     display: flex;

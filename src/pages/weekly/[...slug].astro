@@ -2,11 +2,15 @@
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Subscribe from '../../components/Subscribe.astro';
+import Snapshot from '../../components/Snapshot.astro';
+import RailList from '../../components/RailList.astro';
 import WeeklyPerformance from '../../components/WeeklyPerformance.astro';
 import WeeklySchedule from '../../components/WeeklySchedule.astro';
 import PriceLadder from '../../components/PriceLadder.astro';
 import ScenarioCards from '../../components/ScenarioCards.astro';
-import { allWeekly, listReports, monthDay, longDate, tagSlug, isoJst } from '../../lib/content';
+import {
+  allWeekly, listReports, monthDay, longDate, weekdayJa, shortTitle, tagSlug, isoJst,
+} from '../../lib/content';
 import { SITE_URL, OPERATOR, PUBLISHER_URL } from '../../config';
 
 export async function getStaticPaths() {
@@ -26,6 +30,13 @@ const reports = await listReports();
 const inWeek = reports
   .filter((r) => r.data.date >= d.start && r.data.date <= d.end)
   .reverse();
+
+const railItems = inWeek.map((r) => ({
+  href: `/reports/${r.id}/`,
+  meta: `${monthDay(r.data.date)}（${weekdayJa(r.data.date)}）No. ${r.data.no}`,
+  title: shortTitle(r.data.title),
+  value: r.data.headline && { text: r.data.headline.value, dir: r.data.headline.dir },
+}));
 
 const latest = reports[0];
 
@@ -69,6 +80,10 @@ const breadcrumbs = [{ name: '週次まとめ', path: '/weekly/' }, { name: d.ti
   mastNo={latest?.data.no}
 >
   <div class="wrap">
+    {/* 日次の記事ページと同じ骨組み。右列には週の数値（寸評なし）と、
+        この週の日次レポートを置く。寸評つきの表は本文側に残す */}
+    <div class="article-layout">
+    <div class="article-main">
     <article>
       <nav class="crumb" aria-label="パンくず">
         <a href="/">ホーム</a>
@@ -128,28 +143,23 @@ const breadcrumbs = [{ name: '週次まとめ', path: '/weekly/' }, { name: d.ti
       )}
     </article>
 
-    {inWeek.length > 0 && (
-      <section class="sec">
-        <div class="sec-head">
-          <h2>この週の日次レポート</h2>
-          <span class="spacer"></span>
-          <a href="/reports/">アーカイブへ →</a>
+    </div>
+
+    <aside class="article-rail">
+      <div class="article-rail-in">
+        <div class="rail-only">
+          <Snapshot quotes={d.performance} variant="list" heading="週の数値" />
         </div>
-        <ol class="days">
-          {inWeek.map((r) => (
-            <li>
-              <a href={`/reports/${r.id}/`}>
-                <span class="d num">{monthDay(r.data.date)}</span>
-                <span class="t">{r.data.title}</span>
-                {r.data.headline && (
-                  <span class:list={['v', r.data.headline.dir]}>{r.data.headline.value}</span>
-                )}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </section>
-    )}
+        <RailList
+          heading="この週の日次レポート"
+          items={railItems}
+          moreHref="/reports/"
+          moreLabel="アーカイブへ →"
+          clamp={1}
+        />
+      </div>
+    </aside>
+    </div>
 
     <Subscribe />
   </div>
@@ -266,28 +276,4 @@ const breadcrumbs = [{ name: '週次まとめ', path: '/weekly/' }, { name: d.ti
     line-height: 2;
     color: var(--ink);
   }
-
-  .sec { padding: 0 0 56px; border-top: 1px solid var(--line); padding-top: 40px; }
-  .days { list-style: none; }
-  .days a {
-    display: grid;
-    grid-template-columns: 62px 1fr auto;
-    gap: 20px;
-    align-items: baseline;
-    padding: 15px 0;
-    border-bottom: 1px solid var(--line);
-    transition: background .16s, padding .16s;
-  }
-  .days a:hover { background: var(--surface); padding-inline: 12px; }
-  .days .d { font-size: 12px; color: var(--muted); }
-  .days .t { font-family: var(--se); font-size: 16px; line-height: 1.6; }
-  .days .v {
-    font-family: var(--sa);
-    font-size: 12.5px;
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-  }
-  .days .v.up { color: var(--up); }
-  .days .v.down { color: var(--down); }
-  .days .v.flat { color: var(--muted); }
 </style>

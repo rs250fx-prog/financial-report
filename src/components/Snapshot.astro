@@ -22,8 +22,10 @@ interface Props {
   variant?: 'board' | 'list';
   /** board の広い幅での列数。本文幅に収める記事ページは 4（8件が4×2に揃う） */
   cols?: 4 | 6;
+  /** list の見出し。週次では「週の数値」のように変える */
+  heading?: string;
 }
-const { quotes, note, variant = 'board', cols = 6 } = Astro.props;
+const { quotes, note, variant = 'board', cols = 6, heading = '数値指標' } = Astro.props;
 ---
 
 {quotes.length > 0 && variant === 'board' && (
@@ -43,7 +45,7 @@ const { quotes, note, variant = 'board', cols = 6 } = Astro.props;
 
 {quotes.length > 0 && variant === 'list' && (
   <section class="snap-list" aria-label="マーケット・スナップショット">
-    <div class="sl-h">数値指標</div>
+    <div class="sl-h">{heading}</div>
     <ul>
       {quotes.map((q) => (
         <li>
@@ -131,11 +133,21 @@ const { quotes, note, variant = 'board', cols = 6 } = Astro.props;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--line-2);
   }
-  .snap-list ul { list-style: none; }
+  /* 列幅は全行で共有する（subgrid）。行ごとに決めると、変化の欄が長い行だけ
+     値の右端がずれる。週次は「上昇（幅は未確認）」のような長い変化が入るので、
+     変化の欄は 72px を上限に折り返す（広げるとラベルの側が折り返す） */
+  .snap-list ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto fit-content(72px);
+    column-gap: 10px;
+  }
   .snap-list li {
+    grid-column: 1 / -1;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto 62px;
-    gap: 10px;
+    grid-template-columns: subgrid;
+    column-gap: 10px;
     align-items: baseline;
     padding: 7px 0;
     line-height: 1.4;
@@ -160,7 +172,6 @@ const { quotes, note, variant = 'board', cols = 6 } = Astro.props;
     font-size: 11px;
     font-weight: 500;
     text-align: right;
-    white-space: nowrap;
   }
 
   @media (max-width: 920px) {
