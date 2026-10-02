@@ -27,7 +27,8 @@
 2. `docs/SOURCES.md` — 指標の取得元。**数字を書く前に参照する**
 3. `.claude/skills/teiten-report/SKILL.md` — レポート作成の手順
 4. `../playbook/03-PITFALLS.md` — 案件をまたぐ罠（**一番重要**）
-5. 本書
+5. `docs/STRATEGY.md` — 収益化の戦略（2026-10-01。アフィリエイトと自分の商材への誘導。メール・会員制は保留）
+6. 本書
 
 ---
 
