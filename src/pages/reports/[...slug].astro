@@ -217,10 +217,17 @@ const breadcrumbs = [
     .snap-inline { display: none; }
     .snap-rail { display: block; }
   }
-  /* 読み進めても数値が見えるよう固定する。列の中身が画面の高さに
-     収まらないときは固定しない（下が切れて読めなくなる） */
-  @media (min-width: 1080px) and (min-height: 840px) {
-    .rail-in { position: sticky; top: 24px; }
+  /* 読み進めても数値が見えるよう固定する。top は上部に固定されるナビ
+     （52px＋上下の罫線）の下に 20px 空ける。列の中身が画面の高さに
+     収まらないときは、下が切れて読めなくならないよう列の中で送れるようにする */
+  @media (min-width: 1080px) {
+    .rail-in {
+      position: sticky;
+      top: 74px;
+      max-height: calc(100vh - 94px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
   }
 
   .rel { padding: 30px 0 56px; }
