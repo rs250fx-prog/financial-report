@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  マネーフロー SVGダッシュボード雛形（1280×120）
+  使い方：
+   - 5枠（XAU/USD・日経225・WTI・DXY・VIX）の {{VALUE}} と {{NOTE}} を最新データに置換する
+   - 色 {{COLOR}} は方向で選ぶ： 上昇/ポジティブ=#00e676  下落/ネガティブ=#ff1744  中立=#ffa726
+     （値テキスト fill と説明テキスト fill を同色に揃える）
+   - 出力ファイル名： market_dashboard_YYYYMMDD.svg
+   - サイズ・フォント・レイアウト・区切り線は変更しない
+   - cairosvgでPNG化する場合に備え、フォント名を直接指定している（豆腐化防止）
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="120" viewBox="0 0 1280 120">
+  <defs>
+    <clipPath id="clip"><rect width="1280" height="120"/></clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+    <!-- background -->
+    <rect width="1280" height="120" fill="#0d0d0d"/>
+
+    <!-- dividers -->
+    <line x1="256" y1="12" x2="256" y2="108" stroke="#2a2a2a" stroke-width="1"/>
+    <line x1="512" y1="12" x2="512" y2="108" stroke="#2a2a2a" stroke-width="1"/>
+    <line x1="768" y1="12" x2="768" y2="108" stroke="#2a2a2a" stroke-width="1"/>
+    <line x1="1024" y1="12" x2="1024" y2="108" stroke="#2a2a2a" stroke-width="1"/>
+
+    <text x="24" y="34" font-family="'Bebas Neue','Impact',sans-serif" font-size="16" fill="#888888" letter-spacing="3">XAU / USD</text>
+    <text x="24" y="76" font-family="'Bebas Neue','Impact',sans-serif" font-size="46" fill="#00e676" letter-spacing="2">4,171</text>
+    <text x="24" y="104" font-family="'Noto Serif JP','Arial',sans-serif" font-size="18" fill="#00e676">+0.4% レンジ内</text>
+    <text x="280" y="34" font-family="'Bebas Neue','Impact',sans-serif" font-size="16" fill="#888888" letter-spacing="3">日経 225</text>
+    <text x="280" y="76" font-family="'Bebas Neue','Impact',sans-serif" font-size="46" fill="#00e676" letter-spacing="2">68,957</text>
+    <text x="280" y="104" font-family="'Noto Serif JP','Arial',sans-serif" font-size="18" fill="#00e676">+3.30% 半導体高</text>
+    <text x="536" y="34" font-family="'Bebas Neue','Impact',sans-serif" font-size="16" fill="#888888" letter-spacing="3">WTI</text>
+    <text x="536" y="76" font-family="'Bebas Neue','Impact',sans-serif" font-size="46" fill="#00e676" letter-spacing="2">92.87</text>
+    <text x="536" y="104" font-family="'Noto Serif JP','Arial',sans-serif" font-size="18" fill="#00e676">+2.7% 急伸</text>
+    <text x="792" y="34" font-family="'Bebas Neue','Impact',sans-serif" font-size="16" fill="#888888" letter-spacing="3">DXY</text>
+    <text x="792" y="76" font-family="'Bebas Neue','Impact',sans-serif" font-size="46" fill="#00e676" letter-spacing="2">102.03</text>
+    <text x="792" y="104" font-family="'Noto Serif JP','Arial',sans-serif" font-size="18" fill="#00e676">+0.6% 1年半ぶり高値</text>
+    <text x="1048" y="34" font-family="'Bebas Neue','Impact',sans-serif" font-size="16" fill="#888888" letter-spacing="3">US 10Y</text>
+    <text x="1048" y="76" font-family="'Bebas Neue','Impact',sans-serif" font-size="46" fill="#ff1744" letter-spacing="2">5.234%</text>
+    <text x="1048" y="104" font-family="'Noto Serif JP','Arial',sans-serif" font-size="18" fill="#ff1744">−5.9bp 高値から反落</text>
+  </g>
+</svg>
