@@ -1,10 +1,12 @@
 /**
  * note 用のサムネイル（1280×670）を書き出す。
  *
- *     node tools/make-thumb.mjs 2026-10-02
+ *     node tools/make-thumb.mjs 2026-10-02     日次 → note/thumb_20261002.png
+ *     node tools/make-thumb.mjs 2026-w40       週次 → note/thumb_2026w40.png
  *     node tools/make-thumb.mjs 2026-10-02 --out /tmp/t.png
  *
- * 入力は日次レポートの frontmatter。日付・更新時刻・数値5枠は既存の項目から取り、
+ * 入力は日次レポート／週次まとめの frontmatter。日付・更新時刻・数値5枠は既存の項目
+ * （日次は snapshot、週次は performance）から取り、
  * 大タイトル・中タイトル・小見出し・各枠の寸評だけを `thumb` から読む。
  * **数値を thumb に書かせない。**同じ数字を2か所に書くと、片方だけ直した号が出る。
  *
@@ -39,13 +41,17 @@ const SANS_MED = font('NotoSansJP-VF.ttf', { wght: 500 });
 /** 上昇・下落・中立。数値SVGの雛形と同じ3色 */
 const DIR_COLOR = { up: '#00e676', down: '#ff1744', flat: '#ffa726' };
 
-/** 数値5枠。match は snapshot の label、key は thumb.notes のキー */
+/**
+ * 数値5枠。match は元の項目の label に当てる式、key は thumb.notes のキー。
+ * 日次（snapshot）と週次（performance）でラベルの書き方が違うため、部分一致で探す
+ * （日次「XAU / USD」「米10年金利」、週次「金（XAU/USD）」「米10年債利回り」）。
+ */
 const BOARD = [
-  { key: 'xau', match: 'XAU / USD', label: 'XAU / USD' },
-  { key: 'nikkei', match: '日経225', label: '日経 225' },
-  { key: 'wti', match: 'WTI原油', label: 'WTI' },
-  { key: 'dxy', match: 'ドル指数 DXY', label: 'DXY' },
-  { key: 'us10y', match: '米10年金利', label: 'US 10Y' },
+  { key: 'xau', match: /XAU/, label: 'XAU / USD' },
+  { key: 'nikkei', match: /日経\s*225/, label: '日経 225' },
+  { key: 'wti', match: /WTI/, label: 'WTI' },
+  { key: 'dxy', match: /DXY/, label: 'DXY' },
+  { key: 'us10y', match: /米10年/, label: 'US 10Y' },
 ];
 
 /** 収まらなかった行（エラー）と、縮めて収めた行（お知らせ） */
@@ -134,13 +140,16 @@ function fail(msg) {
 
 // ── 入力 ─────────────────────────────────────────────
 const args = process.argv.slice(2);
-const date = args.find((a) => /^\d{4}-\d{2}-\d{2}$/.test(a));
-if (!date) fail('日付を指定してください（例: node tools/make-thumb.mjs 2026-10-02）');
+const id = args.find((a) => /^\d{4}-\d{2}-\d{2}$|^\d{4}-w\d{2}$/.test(a));
+if (!id) {
+  fail('日付か週を指定してください（例: node tools/make-thumb.mjs 2026-10-02 ／ 2026-w40）');
+}
+const weekly = id.includes('w');
 const outIdx = args.indexOf('--out');
 const out =
-  outIdx >= 0 ? args[outIdx + 1] : join(ROOT, 'note', `thumb_${date.replaceAll('-', '')}.png`);
+  outIdx >= 0 ? args[outIdx + 1] : join(ROOT, 'note', `thumb_${id.replaceAll('-', '')}.png`);
 
-const src = join(ROOT, 'src/content/reports', `${date}.md`);
+const src = join(ROOT, 'src/content', weekly ? 'weekly' : 'reports', `${id}.md`);
 let raw;
 try {
   raw = readFileSync(src, 'utf8');
@@ -154,6 +163,17 @@ const thumb = data.thumb;
 if (!thumb?.title || !thumb?.sub || !thumb?.bias) {
   fail('frontmatter に thumb（title / sub / bias）がありません');
 }
+
+// 日次と週次で変わるのは、媒体ラベル・日付の書き方・上部バー右のタグ・数値の出どころ
+const md = (iso) => iso.slice(5).replace('-', '/');
+const BRAND = weekly ? 'マネーフロー・ウィークリー' : 'マネーフロー・デイリー';
+const tag = weekly
+  ? `WEEK ${data.week} ${md(data.start)}-${md(data.end)}`
+  : `US SESSION ${sessionOf(id)}`;
+const dateText = weekly
+  ? `${data.start.replaceAll('-', ' / ')} - ${data.end.slice(5).replace('-', ' / ')}`
+  : id.replaceAll('-', ' / ');
+const quotes = (weekly ? data.performance : data.snapshot) ?? [];
 
 // ── 組む ─────────────────────────────────────────────
 const parts = [];
@@ -170,8 +190,8 @@ parts.push(
   `<defs><radialGradient id="glow"><stop offset="0" stop-color="#4cff91" stop-opacity=".55"/><stop offset="1" stop-color="#4cff91" stop-opacity="0"/></radialGradient></defs>`,
   `<circle cx="63" cy="21.5" r="10" fill="url(#glow)"/><circle cx="63" cy="21.5" r="4.2" fill="#4cff91"/>`,
   line('LIVE DATA', mono(15, 0.9), { x: 76, y: 27, fill: GOLD }).svg,
-  line('マネーフロー・デイリー', mono(15, 0.9), { x: 332, y: 26.5, fill: GOLD_DIM }).svg,
-  line(`US SESSION ${sessionOf(date)}`, mono(15, 0.9), { x: 552, y: 27, fill: GOLD_DIM }).svg,
+  line(BRAND, mono(15, 0.9), { x: 332, y: 26.5, fill: GOLD_DIM }).svg,
+  line(tag, mono(15, 0.9), { x: weekly ? 572 : 552, y: 27, fill: GOLD_DIM }).svg,
 );
 if (time) {
   parts.push(
@@ -179,10 +199,33 @@ if (time) {
   );
 }
 
-// 日付
+// 媒体ラベルと署名。背景画像には「デイリー」が焼き込まれているので、
+// 週次は同じ位置を地の色で塗ってから描き直す（ラベルは1字ぶん広げる）
+let dateX = 289;
+if (weekly) {
+  const brandFace = [{ font: SANS_MED, size: 14, ls: 3.5 }];
+  const w = line(BRAND, brandFace, { x: 0, y: 0, fill: '#000' }).width - 3.5;
+  const boxW = Math.round(w + 34);
+  parts.push(
+    `<rect x="50" y="103" width="218" height="31" fill="#050a0e"/>`,
+    `<rect x="52.5" y="105.5" width="${boxW}" height="26" fill="#1c1b0d" stroke="#58460b"/>`,
+    line(BRAND, brandFace, { x: 52.5 + 17, y: 123.3, fill: '#e0a81c' }).svg,
+  );
+  dateX = 52.5 + boxW + 24;
+
+  const sigFace = [{ font: SANS_MED, size: 11.6, ls: 1.25 }];
+  const sig = `${BRAND}｜資金の流れで読む市場`;
+  const sw = line(sig, sigFace, { x: 0, y: 0, fill: '#000' }).width - 1.25;
+  parts.push(
+    `<rect x="938" y="622" width="290" height="21" fill="#050a0e"/>`,
+    line(sig, sigFace, { x: 1224.5 - sw, y: 636.6, fill: '#7d5d0e' }).svg,
+  );
+}
+
+// 日付（週次は対象期間）
 parts.push(
-  line(date.replaceAll('-', ' / '), [{ font: BEBAS, size: 27.5, skew: 11, bold: 0.5 }], {
-    x: 289, y: 128.5, fill: '#ffffff',
+  line(dateText, [{ font: BEBAS, size: 27.5, skew: 11, bold: 0.5 }], {
+    x: dateX, y: 128.5, fill: '#ffffff',
   }).svg,
 );
 
@@ -208,10 +251,9 @@ parts.push(
 );
 
 // 数値5枠（y=430 から高さ120。区切り線は背景側にある）
-const snapshot = data.snapshot ?? [];
 BOARD.forEach((slot, i) => {
-  const q = snapshot.find((s) => s.label === slot.match);
-  if (!q) fail(`snapshot に「${slot.match}」がありません`);
+  const q = quotes.find((s) => slot.match.test(s.label));
+  if (!q) fail(`${weekly ? 'performance' : 'snapshot'} に ${slot.label} の行がありません`);
   const x = 11 + 24 + 256 * i;
   const color = DIR_COLOR[q.dir] ?? DIR_COLOR.flat;
   const comment = thumb.notes?.[slot.key] ?? '';
@@ -227,10 +269,10 @@ BOARD.forEach((slot, i) => {
   );
 });
 
-// 小見出し（Market Bias）。右下の署名に重ならないよう 925px で止める
+// 小見出し（Market Bias）。右下の署名に重ならない幅で止める（週次は署名が1字ぶん長い）
 parts.push(
   line(thumb.bias, [{ font: SANS_BOLD, size: 31 }], {
-    x: 60, y: 645.5, fill: '#daa842', maxWidth: 925 - 60, minScale: 0.66, name: '小見出し（thumb.bias）',
+    x: 60, y: 645.5, fill: '#daa842', maxWidth: (weekly ? 912 : 925) - 60, minScale: 0.66, name: '小見出し（thumb.bias）',
   }).svg,
 );
 

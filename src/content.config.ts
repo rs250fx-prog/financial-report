@@ -228,6 +228,20 @@ const weekly = defineCollection({
     /** 来週のスタンス。冒頭に独立したブロックとして出る */
     bias: z.string().default(''),
 
+    /**
+     * note 用サムネイルの文言。日次の thumb と同じ形。
+     * 数値5枠は performance から取る（金・日経225・WTI・DXY・米10年の行が要る）。
+     * こちらの bias は画像に載せる1行で、上の bias（記事の結論）を詰めたもの。
+     */
+    thumb: z
+      .object({
+        title: z.string(),
+        sub: z.string(),
+        bias: z.string(),
+        notes: z.record(z.string(), z.string()).default({}),
+      })
+      .optional(),
+
     /** 今週の要点。日次の points と同じ扱い */
     points: z.array(z.string()).default([]),
 

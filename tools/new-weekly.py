@@ -78,6 +78,15 @@ scenarios:
 # 来週のスタンス。記事の結論として独立したブロックに出る
 bias: ""
 
+# note 用サムネイルの文言。数値は書かない（performance から取る）。
+# title は全角15字相当、sub は24字相当、bias は28字まで（半角の英数字は約半分）。
+# notes は各枠の変化率の後ろに添える寸評。8字まで
+thumb:
+  title: ""
+  sub: ""
+  bias: ""
+  notes: {{ xau: "", nikkei: "", wti: "", dxy: "", us10y: "" }}
+
 tags: []
 # 80〜100字。未記入だと deck が流用され、一覧で重複する
 description: ""

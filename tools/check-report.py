@@ -34,6 +34,7 @@ WEEKLY = Path("src/content/weekly")
 REVIEW_SINCE = "2026-09-30"
 # note 用サムネイルの文言（thumb）を求め始めた号。それより前は手作業で作っていた
 THUMB_SINCE = "2026-10-05"
+THUMB_SINCE_WEEKLY = "2026-w41"
 WD = "月火水木金土日"
 
 errors = []
@@ -406,6 +407,15 @@ def check_weekly(p, seen_week):
         err(p, "Market Bias が雛形のままです")
     if re.search(r'^\s*###\s*[①②③]\s*$', body, re.M):
         err(p, "主要イベントの見出しが未記入です")
+
+    # note 用サムネイルの文言。収まるかどうかは tools/make-thumb.mjs が判定する
+    if p.stem >= THUMB_SINCE_WEEKLY:
+        if not re.search(r'^thumb:\s*$', fm, re.M):
+            warn(p, "thumb がありません。note 用サムネイルを書き出せません")
+        else:
+            for key in ("title", "sub", "bias"):
+                if not re.search(rf'^\s+{key}:\s*"[^"]+"\s*$', fm, re.M):
+                    warn(p, f"thumb の {key} が空です")
 
     if get("draft") == "true":
         warn(p, "draft: true です。公開されません")

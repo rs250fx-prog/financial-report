@@ -6,7 +6,8 @@ note.com へ手動でコピペするための原稿を置く。**ビルドには
 ## サムネイル
 
 `thumb_YYYYMMDD.png`（1280×670）。`node tools/make-thumb.mjs YYYY-MM-DD` が、
-日次レポートの frontmatter から書き出す。手で作らない。文言を直したいときは
+日次レポートの frontmatter から書き出す。週次は `node tools/make-thumb.mjs YYYY-wNN` で
+`thumb_YYYYwNN.png`（ラベルが「マネーフロー・ウィークリー」になり、日付の位置に対象期間が入る）。手で作らない。文言を直したいときは
 原稿の `thumb` を直して再実行する。
 
 `market_dashboard_YYYYMMDD.svg` は、サムネイルを手作業で組んでいた頃の数値5枠

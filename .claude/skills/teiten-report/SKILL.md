@@ -275,6 +275,12 @@ node tools/make-thumb.mjs YYYY-MM-DD   # → note/thumb_YYYYMMDD.png（1280×670
   「注意」として出る。大タイトルと中タイトルに「注意」が出たら、縮めたままにせず文言を詰める
 - 画像は `note/thumb_YYYYMMDD.png`。原稿と一緒にコミットする
 
+**週次も同じスクリプトで出す。**`node tools/make-thumb.mjs YYYY-wNN` →
+`note/thumb_YYYYwNN.png`。日付の位置には対象期間が入り、数値5枠は `performance` の
+金・日経225・WTI・DXY・米10年の行から取る（変化率は週間の値）。`thumb.bias` は
+frontmatter の `bias`（来週のスタンス）を1行に詰めたものにする。
+**来週の予定に無い指標やイベントを書かない**（`schedule` にあるものだけ）。
+
 ## やってはいけないこと
 
 - **数値を創作しない。**出典が確認できない値は載せない
@@ -322,6 +328,7 @@ python tools/check-report.py 2026-w38
 | `levels` | テクニカル・レベル（週末時点）。日次と同じ形式。今週どこが効いて来週どこを見るかの water mark |
 | `scenarios` | **来週のシナリオ。週次の看板要素。**bull / base / bear の3案を必須とし、`trigger`（発動条件）・`chain`（因果連鎖）・`target`（価格目処）を同じ粒度で書く |
 | `bias` | 来週のスタンス。記事の結論として独立したブロックに出る |
+| `thumb` | note 用サムネイルの文言。日次と同じ形（「8-B. note用のサムネイルを書き出す」）。`node tools/make-thumb.mjs YYYY-wNN` で `note/thumb_YYYYwNN.png` が出る |
 
 `performance` は8〜9件を目安に、金・原油・米株・日経・ドル指数・ドル円・米金利・VIX をひととおり。
 
