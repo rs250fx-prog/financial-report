@@ -15,5 +15,10 @@
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^5.0.0",
     "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "fontkitten": "^1.0.3",
+    "js-yaml": "^4.3.2",
+    "sharp": "^0.34.5"
   }
 }

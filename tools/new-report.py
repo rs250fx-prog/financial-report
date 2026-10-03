@@ -71,6 +71,15 @@ snapshot:
 # 一覧の右端に出す代表値。通常は XAU/USD の変化率
 headline: {{ value: "", dir: flat }}
 
+# note 用サムネイルの文言。数値は書かない（snapshot から取る）。
+# title は全角15字相当、sub は24字相当、bias は28字まで（半角の英数字は約半分）。
+# notes は各枠の変化率の後ろに添える寸評。8字まで
+thumb:
+  title: ""
+  sub: ""
+  bias: ""
+  notes: {{ xau: "", nikkei: "", wti: "", dxy: "", us10y: "" }}
+
 # テクニカル・レベル。上から下へ価格順に並べる。
 # kind は resistance / current / support
 levels:

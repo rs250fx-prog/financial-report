@@ -29,6 +29,14 @@ snapshot:
 # 一覧の右端に出す代表値。通常は XAU/USD の変化率
 headline: { value: "+0.00%", dir: up }
 
+# note 用サムネイルの文言（node tools/make-thumb.mjs が読む）。サイトには出ない。
+# 数値は書かない。日付・更新時刻・数値5枠は date / updated / snapshot から取る
+thumb:
+  title: "大タイトル。全角15字相当まで"
+  sub: "中タイトル。全角24字相当まで"
+  bias: "小見出し。Market Bias を1行で。全角28字まで"
+  notes: { xau: "寸評", nikkei: "寸評", wti: "寸評", dxy: "寸評", us10y: "寸評" }
+
 tags: ["実質金利", "XAU/USD"]
 
 description: "検索結果に出る説明文。未記入なら deck が使われる"

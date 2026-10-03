@@ -32,6 +32,8 @@ WEEKLY = Path("src/content/weekly")
 # これより前の号は、結果が出たあとに書くことになり検証として成立しないため、
 # 遡らない。境界を定数で持っておかないと、消せない警告が並び続ける。
 REVIEW_SINCE = "2026-09-30"
+# note 用サムネイルの文言（thumb）を求め始めた号。それより前は手作業で作っていた
+THUMB_SINCE = "2026-10-05"
 WD = "月火水木金土日"
 
 errors = []
@@ -126,6 +128,16 @@ def check(p, seen_no):
             warn(p, "levels に現在値（kind: current）がありません")
     else:
         warn(p, "levels（テクニカル・レベル）が空です。定点観測の中核なので埋めることを推奨")
+
+    # note 用サムネイルの文言。文字が枠に収まるかは tools/make-thumb.mjs が
+    # 実際の字幅で判定するので、ここでは有無だけを見る。
+    if p.stem >= THUMB_SINCE:
+        if not re.search(r'^thumb:\s*$', fm, re.M):
+            warn(p, "thumb がありません。note 用サムネイルを書き出せません")
+        else:
+            for key in ("title", "sub", "bias"):
+                if not re.search(rf'^\s+{key}:\s*"[^"]+"\s*$', fm, re.M):
+                    warn(p, f"thumb の {key} が空です")
 
     # 前号のシナリオの答え合わせ。
     # 出しっぱなしを防ぐのが目的なので、無ければ警告する。

@@ -3,6 +3,15 @@
 note.com へ手動でコピペするための原稿を置く。**ビルドには含まれない**
 （`src/content/` の外なので Astro は読まない）。
 
+## サムネイル
+
+`thumb_YYYYMMDD.png`（1280×670）。`node tools/make-thumb.mjs YYYY-MM-DD` が、
+日次レポートの frontmatter から書き出す。手で作らない。文言を直したいときは
+原稿の `thumb` を直して再実行する。
+
+`market_dashboard_YYYYMMDD.svg` は、サムネイルを手作業で組んでいた頃の数値5枠
+（〜10/2号）。いまは `make-thumb.mjs` が同じ枠を描く。
+
 ## 位置づけ
 
 note を入口にして、サイトへ送客するための簡易版。full版は

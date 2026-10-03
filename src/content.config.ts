@@ -47,6 +47,26 @@ const reports = defineCollection({
       .optional(),
 
     /**
+     * note 用サムネイルの文言（`tools/make-thumb.mjs` が読む）。サイトには出ない。
+     *
+     * **数値はここに書かない。**日付・更新時刻・数値5枠は date / updated /
+     * snapshot から取る。同じ数字を2か所に書くと、片方だけ直した号が出る。
+     * notes は各枠の変化率の後ろに添える短い寸評で、キーは
+     * xau / nikkei / wti / dxy / us10y。
+     */
+    thumb: z
+      .object({
+        /** 大タイトル。全角15字相当まで（半角の英数字は約半分で数える） */
+        title: z.string(),
+        /** 中タイトル。全角24字相当まで */
+        sub: z.string(),
+        /** 小見出し（Market Bias の1行）。全角28字までが原寸、42字が上限 */
+        bias: z.string(),
+        notes: z.record(z.string(), z.string()).default({}),
+      })
+      .optional(),
+
+    /**
      * テクニカル・レベル（価格帯の梯子）。上から下へ並べる。
      *
      * 定点観測の中核。同じ水準を毎日追うことで、どこが効いて
