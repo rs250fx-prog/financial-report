@@ -16,7 +16,7 @@ note.com へ手動でコピペするための原稿を置く。**ビルドには
 ## 位置づけ
 
 note を入口にして、サイトへ送客するための簡易版。full版は
-`src/content/reports/YYYY-MM-DD.md`。
+`src/content/reports/YYYY-MM-DD.md`。週次は `YYYY-wNN.md` で、full版は `src/content/weekly/YYYY-wNN.md`。
 
 ## 線引き
 

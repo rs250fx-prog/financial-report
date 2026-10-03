@@ -160,12 +160,15 @@ Claude の cloud routines に登録しているプロンプトの原本。**ル�
 5. 本文を書く。4節すべてを埋める。節を省略しない
 6. `python tools/check-report.py <YYYY-wNN>` を実行し、エラーが0になるまで直す
 7. `npm ci && npm run build` でビルドが通ることを確認する（npm が失敗しても、検査が通っていれば次へ進み、その旨を結果に書く）
+7. note 用の簡易版を `note/<YYYY-wNN>.md` に書く（SKILL.md の「週次まとめ」の「note用の簡易版」）。
+   日次の note と同じ線引き・書式で、数字と結論は出し切り、シナリオの3案・テクニカル・レベルの全段・出典はサイトに残す。
+   末尾のリンクは `https://teiten.trade/weekly/<YYYY-wNN>/`
 7-B. frontmatter の `thumb` に大タイトル・中タイトル・小見出し・数値5枠の寸評を書き、
    `node tools/make-thumb.mjs <YYYY-wNN>` で note 用サムネイルを書き出す（SKILL.md のステップ8-B）。
    **エラーが出たら文言を短くして、通るまでやり直す。**`thumb` に数値の欄は無い（performance から取る）。
    小見出しは `bias`（来週のスタンス）を1行に詰める。`schedule` に無い指標やイベントを書かない。
    手順7で npm が失敗していて書き出せない場合は、`thumb` の文言だけ書いて次へ進み、その旨を結果に書く
-8. commit して `main` に push する。`note/thumb_<YYYYwNN>.png` も add に含める
+8. commit して `main` に push する。`note/<YYYY-wNN>.md` と `note/thumb_<YYYYwNN>.png` も add に含める
 
 ## 書き方
 
@@ -200,6 +203,7 @@ Claude の cloud routines に登録しているプロンプトの原本。**ル�
 - 今週の核心テーマ
 - 3シナリオ（bull / base / bear）の要点
 - 取得できなかった指標があれば、その一覧
+- note 用の簡易版（`note/<YYYY-wNN>.md`）を書いたか
 - note 用サムネイル（`note/thumb_<YYYYwNN>.png`）を書き出せたか。「注意」が出た行があればその内容
 - push したコミットのハッシュ
 
@@ -231,6 +235,7 @@ Claude の cloud routines に登録しているプロンプトの原本。**ル�
 
 | 日付 | 内容 |
 |---|---|
+| 2026-10-03 | 週次の手順にも 7（note 用の簡易版 `note/<YYYY-wNN>.md`）を追加し、完了時の報告に足した。週次も日次と同じく note を出す |
 | 2026-10-03 | 週次の手順にも 7-B（note 用サムネイルの書き出し）を追加し、完了時の報告にサムネイルの結果を足した。登録済みのルーティン（`trig_016QTPqnayVK9vrrR6HSGWNu`）にも同じ文面を反映済み |
 | 2026-10-03 | 日次の手順に 7-B（note 用サムネイルの書き出し）を追加し、完了時の報告にサムネイルの結果を足した。登録済みのルーティン（`trig_01YXGbBvr9ALLagKshTTcikj`）にも同じ文面を反映済み。**ルーティンの文面は Claude Code の RemoteTrigger から更新できる**（管理画面で貼り替える必要はない） |
 | 2026-10-01 | `fetch-indicators.py` が通信できない場合の代替手順を明記。あわせて**要約から数値を読まない**規則を追加（架空の行が混ざる実例があったため） |
