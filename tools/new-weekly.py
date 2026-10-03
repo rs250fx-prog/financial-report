@@ -139,8 +139,10 @@ def main():
         except ValueError:
             sys.exit("日付は YYYY-MM-DD で指定してください。")
     else:
-        # 引数なしなら「直近に終わった週」。土日に書く想定
-        base = now.date() - datetime.timedelta(days=(now.date().weekday() + 1) % 7 or 7)
+        # 引数なしなら「直近に終わった週」（直近の金曜を含む週）。土日に書く想定
+        # 土曜なら前日、日曜なら2日前、平日なら前週の金曜
+        wd = now.date().weekday()
+        base = now.date() - datetime.timedelta(days=wd - 4 if wd >= 5 else wd + 3)
 
     monday = base - datetime.timedelta(days=base.weekday())
     friday = monday + datetime.timedelta(days=4)
