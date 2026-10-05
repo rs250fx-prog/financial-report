@@ -134,7 +134,19 @@ def main() -> int:
 行が混ざった出力が返ったことがある。生データには無い行だった。
 **数字は要約から取らない。**""")
 
-    print("\n原油・DXY・金・日経・BTC はFREDでは間に合わない。")
+    print("\n金（XAU/USD 現物）は USAGOLD の価格履歴から取る（tools/fetch-gold.py）：")
+    try:
+        import importlib.util
+        from pathlib import Path
+        spec = importlib.util.spec_from_file_location(
+            "fetch_gold", Path(__file__).with_name("fetch-gold.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        mod.report()
+    except Exception as e:
+        print(f"NG  fetch-gold.py を実行できません: {e}")
+
+    print("\n原油・DXY・日経・BTC はFREDでは間に合わない。")
     print("取得元は docs/SOURCES.md を参照。")
     return 0
 

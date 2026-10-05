@@ -54,7 +54,7 @@ CSVはキャッシュされる。素で叩くと最新1日分が落ちた結果�
 
 | 指標 | 取得元 | 理由 |
 |---|---|---|
-| 金（XAU/USD） | [USAGOLD 日次レポート](https://www.usagold.com/daily-precious-metals-market-report/) | 出所により28ドル幅で割れる。**前号と同じ系列を採る** |
+| 金（XAU/USD） | [USAGOLD 価格履歴](https://www.usagold.com/daily-gold-price-history/)の日別カレンダー。`python tools/fetch-gold.py` で取る（`fetch-indicators.py` からも呼ばれる） | 出所により28ドル幅で割れるので、**定義を明記した1つの表に固定する**（「XAUUSD、山岳部時間 15:00 に記録」）。日次レポートのページは 403 で開けないため使わない。**ページ上部の「Yesterday」は表と一致しないことがあるので読まない。**山岳部時間で当日のセルは同日中は動くため、8時の実行で読む最新日の値には「読み取り」と時点を添え、翌号で確定値と照合する |
 | WTI・Brent原油 | 当日の報道（CNBC・Investrade等） | FRED `DCOILWTICO` は約1週間遅れ。**確定値の裏取りにのみ使う** |
 | ドル指数 DXY | 当日の報道（FXStreet等） | ICEの指数のためFREDに無い。`DTWEXBGS` は**広義ドル指数で別物。代用しない** |
 | 日経225 | [日経平均プロフィル（Historical Data）](https://indexes.nikkei.co.jp/en/nkave/archives/data) | 始値・高値・安値・終値が当日中に載る。[日経電子版](https://www.nikkei.com/marketdata/quote/NK225/)は画面が重く、素のテキストから値を読めない |

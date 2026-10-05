@@ -26,7 +26,7 @@ const FRED = [
 ];
 
 const OTHERS = [
-  { name: '金（XAU/USD）', src: 'USAGOLD 日次レポート', href: 'https://www.usagold.com/daily-precious-metals-market-report/', note: '出所により水準が割れるため、系列を固定している' },
+  { name: '金（XAU/USD）', src: 'USAGOLD 価格履歴（日別、山岳部時間15:00記録）', href: 'https://www.usagold.com/daily-gold-price-history/', note: '出所により水準が割れるため、定義を明記した1つの表に固定している。当日分は翌号で確定値と照合する' },
   { name: 'WTI・Brent原油', src: '当日の報道（複数社で突き合わせ）', href: '', note: '公的データは約1週間遅れるため、確定値の裏取りにのみ使う' },
   { name: 'ドル指数 DXY', src: '当日の報道（複数社で突き合わせ）', href: '', note: 'ICEの指数のため公的データベースに無い' },
   { name: '日経225', src: '日経平均プロフィル', href: 'https://indexes.nikkei.co.jp/en/nkave/archives/data', note: '日本経済新聞社の公式データ' },
