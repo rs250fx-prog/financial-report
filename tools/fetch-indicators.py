@@ -53,12 +53,18 @@ def latest(series_id: str):
     「まだ出ていない」と誤認する。実際にVIXで1日ずれた。毎回違うクエリを付ける。
     """
     url = URL.format(series_id) + f"&_={int(datetime.now().timestamp())}"
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "teiten-indicators/1.0",
-        "Cache-Control": "no-cache",
-    })
-    with urllib.request.urlopen(req, timeout=25) as r:
-        rows = list(csv.reader(io.StringIO(r.read().decode("utf-8"))))
+    # User-Agent は付けない。独自の値（teiten-indicators/1.0）を付けると
+    # FRED から応答が返らずタイムアウトした（クラウド実行環境、2026-10-05）。
+    # Python 既定の UA なら 1 秒以内に返る。
+    req = urllib.request.Request(url, headers={"Cache-Control": "no-cache"})
+    for attempt in (1, 2):
+        try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+                rows = list(csv.reader(io.StringIO(r.read().decode("utf-8"))))
+            break
+        except OSError:
+            if attempt == 2:
+                raise
     for row in reversed(rows[1:]):
         if len(row) >= 2 and row[1] not in (".", ""):
             return datetime.strptime(row[0], "%Y-%m-%d").date(), row[1]
