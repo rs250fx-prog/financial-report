@@ -22,3 +22,10 @@
 
 /*.png
   Cache-Control: public, max-age=604800
+
+# note 用サムネイル（tools/copy-thumbs.mjs が dist/thumb/ に写す）。
+# note に貼るための画像で、検索結果に出す必要はない。文言を直して出し直すことが
+# あるので長くキャッシュしない
+/thumb/*
+  X-Robots-Tag: noindex
+  Cache-Control: public, max-age=300

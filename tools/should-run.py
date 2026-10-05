@@ -28,7 +28,8 @@
 
 import argparse
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -154,7 +155,9 @@ def main() -> int:
     p.add_argument("--date", help="YYYY-MM-DD。既定は今日")
     a = p.parse_args()
 
-    d = date.fromisoformat(a.date) if a.date else date.today()
+    # 既定の「今日」は日本時間で取る。クラウドの実行環境は時計が UTC で、
+    # 朝8時台（JST）はまだ前日のため、月曜の実行を日曜と判定して「休止」を出した
+    d = date.fromisoformat(a.date) if a.date else datetime.now(ZoneInfo("Asia/Tokyo")).date()
     run, why = decide(d, a.kind)
 
     print(f"{d:%Y-%m-%d}（{'月火水木金土日'[d.weekday()]}） {a.kind}")
