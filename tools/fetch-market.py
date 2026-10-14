@@ -26,10 +26,20 @@ Yahoo は取引所のデータを中継する集約サイトで、一次の出�
 
 ## 取引中の足を混ぜない
 
-最後の足は取引中のことがある。次のどちらかに当たる最後の足は捨て、確定した足だけを出す。
+最後の足（2本まで）は取引中のことがある。次のどちらかに当たる足は確定した足から外し、
+その時点の値を「読み取り」として時刻つきで別に出す。終値としては書かない。
 
 - 足の時刻が最終取引時刻（regularMarketTime）と同じ（DXY・先物。ほぼ24時間動く）
-- 足の時刻が現在の取引時間帯の中にあり、その時間帯がまだ終わっていない（日経225・日経VI）
+- 足の時刻が現在の取引時間帯の中にあり、その時間帯がまだ終わっていない
+
+**8時（JST）の定期実行では、DXY と先物の前営業日の足はまだ開いている。**Yahoo の日足は
+ニューヨークの0時（日本時間13時、夏時間）まで確定しないため、確定した終値は前々営業日の
+ものになり、前営業日は「読み取り」で出る（2026-10-15 7:26 JST に確認。最初の検証は
+日本時間の昼に行っていて、この点を見落とした）。日経225・日経VI・米国の株価指数は
+引けているので、前営業日の終値が出る。
+
+東京の足は、引けた後も終値が None のまま残ることがある（10/14）。最終取引がその日の
+うちなら、その価格を終値とする。
 
 日付は取引所の時間帯で数える。
 
@@ -73,6 +83,7 @@ PATH = "/v8/finance/chart/{}?range=10d&interval=1d"
 # Python 既定の UA だと 429 が返る（2026-10-14 に確認）
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"
 JST = ZoneInfo("Asia/Tokyo")
+TZ_NAMES = {"America/New_York": "ニューヨーク時間", "America/Chicago": "シカゴ時間", "Asia/Tokyo": "日本時間"}
 
 
 def chart(symbol: str) -> dict:
@@ -93,24 +104,41 @@ def chart(symbol: str) -> dict:
 
 
 def closes(res: dict, now: float):
-    """確定した足だけを [(日付, 値)] で返す。古い順"""
+    """(確定した足 [(日付, 値)] 古い順, 取引中の読み取り (時刻, 値) か None) を返す"""
     meta = res["meta"]
     tz = ZoneInfo(meta["exchangeTimezoneName"])
     stamps = res.get("timestamp") or []
     values = res["indicators"]["quote"][0].get("close") or []
     period = (meta.get("currentTradingPeriod") or {}).get("regular") or {}
     rmt = meta.get("regularMarketTime")
+    price = meta.get("regularMarketPrice")
 
-    bars = [(t, v) for t, v in zip(stamps, values) if v is not None]
-    if bars:
+    def is_open(t):
+        # 最終取引時刻ちょうどの足（ほぼ24時間動く DXY・先物で、確定した足の後ろに付く）か、
+        # まだ終わっていない取引時間帯の中の足
+        tick = rmt is not None and abs(t - rmt) < 120
+        return tick or bool(period and period["start"] <= t < period["end"] and now < period["end"])
+
+    bars = list(zip(stamps, values))
+    live = None
+    # 開いた足は最後の2本までありうる（確定前の日足と、その後ろの最終取引の足）
+    for _ in range(2):
+        if bars and is_open(bars[-1][0]):
+            bars.pop()
+            if live is None and rmt is not None and price is not None:
+                live = (datetime.fromtimestamp(rmt, tz), price)
+
+    # 引けた日の終値が None のまま残ることがある（東京。10/14 の足が引け後も None だった）。
+    # 最終取引がその日のうちなら、その価格が終値
+    if bars and bars[-1][1] is None and rmt is not None and price is not None:
         t, _ = bars[-1]
-        live_tick = rmt is not None and abs(t - rmt) < 120
-        in_session = period and period["start"] <= t < period["end"] and now < period["end"]
-        if live_tick or in_session:
-            bars = bars[:-1]
+        if datetime.fromtimestamp(t, tz).date() == datetime.fromtimestamp(rmt, tz).date():
+            bars[-1] = (t, price)
 
     out = []
     for t, v in bars:
+        if v is None:
+            continue
         d = datetime.fromtimestamp(t, tz).date()
         if d.weekday() >= 5:
             continue
@@ -118,7 +146,7 @@ def closes(res: dict, now: float):
             out[-1] = (d, v)
         else:
             out.append((d, v))
-    return out
+    return out, live
 
 
 def business_days_between(a: date, b: date) -> int:
@@ -146,7 +174,7 @@ def report() -> int:
     failed = []
     for symbol, name, definition, digits in SERIES:
         try:
-            rows = closes(chart(symbol), now)
+            rows, live = closes(chart(symbol), now)
         except Exception as e:
             print(f"NG  {name}（{symbol}）取得できません: {e}")
             failed.append(name)
@@ -163,9 +191,14 @@ def report() -> int:
             pd_, pv = rows[-2]
             chg = f"、{pd_.month}/{pd_.day}比 {pct(v, pv)}"
         print(f"{mark}{name}：{fmt(v, digits)}（{d.month}/{d.day}終値{chg}、Yahoo {symbol}）")
+        if live:
+            lt, lv = live
+            print(f"      読み取り：{fmt(lv, digits)}（{lt.month}/{lt.day} {lt:%H:%M} {TZ_NAMES.get(str(lt.tzinfo), str(lt.tzinfo))}。"
+                  f"取引中の値で、終値・清算値ではない）")
         print(f"      {definition}")
 
     print("\n本文にはこの形式で、「◯/◯終値」と比較した日付を添えて書く。")
+    print("「読み取り」は取引中の値。終値として書かない。書くなら時刻を添える（金の USAGOLD 読み取りと同じ扱い）。")
     print("報道と同じ定義の値が食い違ったら、この値を採る（docs/SOURCES.md §1）。")
     print("△ は確定した足が3営業日以上前のもの。休場明けなら正常。")
     if failed:
