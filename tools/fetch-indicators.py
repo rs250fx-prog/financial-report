@@ -21,7 +21,8 @@
 翌号で確定値に差し替えればよい。
 
 原油（DCOILWTICO）は約1週間遅れるため日次には使えない。DXYはFREDに無い
-（ICEの指数のため）。この2つは docs/SOURCES.md に別の取得元を書いてある。
+（ICEの指数のため）。この2つは tools/fetch-market.py で取る（最後に呼ぶ）。
+金は tools/fetch-gold.py（USAGOLD）。
 """
 
 import csv
@@ -135,20 +136,27 @@ def main() -> int:
 **数字は要約から取らない。**""")
 
     print("\n金（XAU/USD 現物）は USAGOLD の価格履歴から取る（tools/fetch-gold.py）：")
+    run_sibling("fetch-gold.py")
+
+    print("\nDXY・日経225・日経VI・原油・米株価指数の日足終値（tools/fetch-market.py）：")
+    run_sibling("fetch-market.py")
+
+    print("\nBTC・日本10年債・為替はここに無い。取得元は docs/SOURCES.md を参照。")
+    return 0
+
+
+def run_sibling(filename: str) -> None:
+    """同じフォルダのスクリプトの report() を呼ぶ。失敗してもこのスクリプトは止めない"""
+    import importlib.util
+    from pathlib import Path
     try:
-        import importlib.util
-        from pathlib import Path
         spec = importlib.util.spec_from_file_location(
-            "fetch_gold", Path(__file__).with_name("fetch-gold.py"))
+            filename.removesuffix(".py").replace("-", "_"), Path(__file__).with_name(filename))
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         mod.report()
     except Exception as e:
-        print(f"NG  fetch-gold.py を実行できません: {e}")
-
-    print("\n原油・DXY・日経・BTC はFREDでは間に合わない。")
-    print("取得元は docs/SOURCES.md を参照。")
-    return 0
+        print(f"NG  {filename} を実行できません: {e}")
 
 
 if __name__ == "__main__":

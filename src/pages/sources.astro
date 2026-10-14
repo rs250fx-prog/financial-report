@@ -27,12 +27,14 @@ const FRED = [
 
 const OTHERS = [
   { name: '金（XAU/USD）', src: 'USAGOLD 価格履歴（日別、山岳部時間15:00記録）', href: 'https://www.usagold.com/daily-gold-price-history/', note: '出所により水準が割れるため、定義を明記した1つの表に固定している。当日分は翌号で確定値と照合する' },
-  { name: 'WTI・Brent原油', src: '当日の報道（複数社で突き合わせ）', href: '', note: '公的データは約1週間遅れるため、確定値の裏取りにのみ使う' },
-  { name: 'ドル指数 DXY', src: '当日の報道（複数社で突き合わせ）', href: '', note: 'ICEの指数のため公的データベースに無い' },
-  { name: '日経225', src: '日経平均プロフィル', href: 'https://indexes.nikkei.co.jp/en/nkave/archives/data', note: '日本経済新聞社の公式データ' },
+  { name: 'WTI・Brent原油', src: 'Yahoo Finance（期近先物の日足 CL=F / BZ=F）', href: 'https://finance.yahoo.com/quote/CL%3DF/', note: '終値は清算値。公的データは約1週間遅れるため、裏取りにのみ使う。限月交代の日は前日比が限月をまたぐ' },
+  { name: 'ドル指数 DXY', src: 'Yahoo Finance（日足 DX-Y.NYB）', href: 'https://finance.yahoo.com/quote/DX-Y.NYB/', note: 'ICEの指数のため公的データベースに無い。取引所のデータを中継する集約サイトで一次の出所ではないが、報道ごとに割れる値を寄せ集めるより、1つの系列に固定することを取った' },
+  { name: '日経225', src: 'Yahoo Finance（日足 ^N225）', href: 'https://finance.yahoo.com/quote/%5EN225/', note: '算出元の日経平均プロフィルと照合できるときは照合する' },
   { name: '日本10年債利回り', src: '財務省 国債金利情報', href: 'https://www.mof.go.jp/jgbs/reference/interest_rate/index.htm', note: '公的な確定値' },
   { name: 'BTC', src: 'CoinGecko（CoinDeskで突き合わせ）', href: 'https://www.coingecko.com/en/coins/bitcoin', note: '24時間取引で終値が決まらないため、UTC 0:00（日本時間9:00）の値に固定している' },
-  { name: '日経VI', src: '日経平均プロフィル', href: 'https://indexes.nikkei.co.jp/nkave/index/profile?idx=nk225vi', note: '前日終値は、当日値と前日比からの逆算。逆算であることを本文に書く' },
+  { name: '日経VI', src: 'Yahoo Finance（日足 ^NKVI.OS）', href: 'https://finance.yahoo.com/quote/%5ENKVI.OS/', note: '算出元の日経平均プロフィルと照合できるときは照合する' },
+  { name: 'Nasdaq総合・ダウ平均', src: 'Yahoo Finance（日足 ^IXIC / ^DJI）', href: '', note: 'S&P 500 と VIX は FRED が原本で、同じ系列から1日早く裏取りする' },
+  { name: 'ドル円・ユーロドル', src: '当日の報道（複数社で突き合わせ）', href: '', note: '集約サイトの為替の日足は、前日の引け値が入って1日ずれるため使わない' },
 ];
 ---
 
