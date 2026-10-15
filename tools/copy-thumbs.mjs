@@ -3,6 +3,7 @@
  *
  *     note/thumb_20261005.png → dist/thumb/2026-10-05.png
  *     note/thumb_2026w40.png  → dist/thumb/2026-w40.png
+ *     note/info_20261015.png  → dist/info/2026-10-15.png（図解。日次のみ）
  *
  * 画像はクラウドの定期実行が作ってリポジトリに push する。リポジトリは非公開なので、
  * そのままでは手元のPCで pull しないと取り出せない。スマホからでも note に貼れるよう、
@@ -17,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'note');
 const OUT = join(ROOT, 'dist', 'thumb');
+const OUT_INFO = join(ROOT, 'dist', 'info');
 
 if (!existsSync(join(ROOT, 'dist'))) {
   console.log('copy-thumbs: dist がありません（ビルド後に実行してください）');
@@ -24,10 +26,18 @@ if (!existsSync(join(ROOT, 'dist'))) {
 }
 
 mkdirSync(OUT, { recursive: true });
+mkdirSync(OUT_INFO, { recursive: true });
 let n = 0;
+let m = 0;
 for (const f of readdirSync(SRC)) {
   const daily = f.match(/^thumb_(\d{4})(\d{2})(\d{2})\.png$/);
   const weekly = f.match(/^thumb_(\d{4})w(\d{2})\.png$/);
+  const info = f.match(/^info_(\d{4})(\d{2})(\d{2})\.png$/);
+  if (info) {
+    copyFileSync(join(SRC, f), join(OUT_INFO, `${info[1]}-${info[2]}-${info[3]}.png`));
+    m += 1;
+    continue;
+  }
   const name = daily
     ? `${daily[1]}-${daily[2]}-${daily[3]}.png`
     : weekly
@@ -37,4 +47,4 @@ for (const f of readdirSync(SRC)) {
   copyFileSync(join(SRC, f), join(OUT, name));
   n += 1;
 }
-console.log(`OK サムネイル${n}件を dist/thumb/ に写しました`);
+console.log(`OK サムネイル${n}件を dist/thumb/ に、図解${m}件を dist/info/ に写しました`);

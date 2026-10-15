@@ -303,6 +303,41 @@ node tools/make-thumb.mjs YYYY-MM-DD   # → note/thumb_YYYYMMDD.png（1280×670
 frontmatter の `bias`（来週のスタンス）を1行に詰めたものにする。
 **来週の予定に無い指標やイベントを書かない**（`schedule` にあるものだけ）。
 
+### 8-C. note用の図解を書き出す（日次のみ）
+
+note の本文に貼る縦長の図解（幅1080、高さは内容しだいで約3,100）。frontmatter の
+`infographic` に文言を書き、スクリプトで画像にする。
+
+```bash
+node tools/make-infographic.mjs YYYY-MM-DD   # → note/info_YYYYMMDD.png
+```
+
+**数値は二重に書かない。**各ブロックの項目は `ref`（`snapshot` か `infographic.quotes` の
+label の部分一致）で値・変化・向きを引く。`snapshot` に無い数字だけを `quotes` に1回書く。
+`quotes` の数字も本文と同じ値にする。出所の無い数字を図解のために足さない。
+
+| 項目 | 内容 |
+|---|---|
+| `flow` | 冒頭の帯。3〜4枠。`{ text, tone }`。tone は up / down / blue / gold / navy。`\n` で2行 |
+| `quotes` | snapshot に無い数値（米2年債・Nasdaq・ダウ・個別銘柄など）。snapshot と同じ形 |
+| `focus` | その日の主役の指標。`title` `lead`、予想と結果の `compare`（`label` `unit` `forecast` `actual` `suffix`、2枠まで）、強調する1数値の `highlight`（`label` `unit` `value` `dir` `note` `icon`）。**予想と結果がそろう指標が無い日は省く** |
+| `reaction` | 反応の図。`lead`、`root`（`text` `sub`）、`mid`（2つ、`text` `sub` `icon` `dir`）、`leaves`（3つ、同じ形） |
+| `rates` | 金利の2枚。`title` `lead`、`cards`（`ref` `name` `caption`）、右の解説 `note`（`title` `text`、5行まで） |
+| `gold` | 金の天秤。`title` `lead`、上がる側（軽い）の `light`、下がる側（重い）の `heavy`（各 `ref` `name`、または `name` `dir` だけ）、`sub_price`、結論の `conclusion`（2行まで）。価格は snapshot の XAU を使う |
+| `table` | 主要マーケットの数字。`ref` `name` を10行前後。左右2列に半分ずつ並ぶ |
+| `movers` | 注目銘柄の帯。`title`、`items`（`ref` `note`。2つまで） |
+| `bias` | `label`（例「ややリスクオフ」）、`dir`、`text`（5行まで） |
+| `watch` | 注目点3つ。`icon` `title` `text`（2行まで）。Market Bias の監視項目と同じ内容 |
+
+icon は gold / bank / dollar / chip / bond / oil / calendar / chart。ブロック（`focus` `reaction`
+`rates` `gold`）は省けて、番号は出したものだけで振り直される。見出し・中見出しは `thumb` の
+`title` / `sub` を使う。
+
+- 収まらない文言・行数オーバー・引けない `ref` は**エラーで止まる**。文言を詰めて通るまでやり直す
+- **人物の発言・似顔絵を入れない。**原稿に無い要素を図解だけに足さない
+- 画像は `note/info_YYYYMMDD.png`。原稿と一緒にコミットする。push 後
+  `https://teiten.trade/info/YYYY-MM-DD.png` で開ける
+
 ## やってはいけないこと
 
 - **数値を創作しない。**出典が確認できない値は載せない

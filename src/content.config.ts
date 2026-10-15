@@ -67,6 +67,12 @@ const reports = defineCollection({
       .optional(),
 
     /**
+     * note 用の図解の文言（`tools/make-infographic.mjs` が読む）。サイトには出ない。
+     * 形は .claude/skills/teiten-report/SKILL.md の「8-C」。中身の検査はスクリプト側で行う。
+     */
+    infographic: z.record(z.string(), z.unknown()).optional(),
+
+    /**
      * テクニカル・レベル（価格帯の梯子）。上から下へ並べる。
      *
      * 定点観測の中核。同じ水準を毎日追うことで、どこが効いて

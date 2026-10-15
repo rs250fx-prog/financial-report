@@ -29,3 +29,8 @@
 /thumb/*
   X-Robots-Tag: noindex
   Cache-Control: public, max-age=300
+
+# note 用の図解（tools/copy-thumbs.mjs が dist/info/ に写す）。扱いはサムネイルと同じ
+/info/*
+  X-Robots-Tag: noindex
+  Cache-Control: public, max-age=300

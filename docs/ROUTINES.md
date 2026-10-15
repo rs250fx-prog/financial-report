@@ -86,7 +86,10 @@ Claude の cloud routines に登録しているプロンプトの原本。**ル�
    `node tools/make-thumb.mjs <YYYY-MM-DD>` で note 用サムネイルを書き出す（SKILL.md のステップ8-B）。
    **エラーが出たら文言を短くして、通るまでやり直す。**`thumb` に数値の欄は無い（snapshot から取る）。
    手順6で npm が失敗していて書き出せない場合は、`thumb` の文言だけ書いて次へ進み、その旨を結果に書く
-8. commit して `main` に push する。`note/thumb_<YYYYMMDD>.png` も add に含める
+7-C. frontmatter の `infographic` に図解の文言を書き、`node tools/make-infographic.mjs <YYYY-MM-DD>` で
+   note 用の図解を書き出す（SKILL.md のステップ8-C）。**数値は `ref` で snapshot から引き、snapshot に無い数字だけを
+   `infographic.quotes` に書く。**エラーが出たら文言を詰めて、通るまでやり直す。書き出した画像を開いて目で確かめる必要はない
+8. commit して `main` に push する。`note/thumb_<YYYYMMDD>.png` と `note/info_<YYYYMMDD>.png` も add に含める
 
 ## 公開の判定
 
@@ -137,6 +140,8 @@ Claude の cloud routines に登録しているプロンプトの原本。**ル�
 - 取得できなかった指標があれば、その一覧
 - note 用サムネイル（`note/thumb_<YYYYMMDD>.png`）を書き出せたか。「注意」が出た行があればその内容。
   画像のURL（`https://teiten.trade/thumb/<YYYY-MM-DD>.png`。push の1〜2分後から開ける）
+- note 用の図解（`note/info_<YYYYMMDD>.png`）を書き出せたか。「注意」が出た行があればその内容。
+  画像のURL（`https://teiten.trade/info/<YYYY-MM-DD>.png`。push の1〜2分後から開ける）
 - push したコミットのハッシュ
 
 **push に失敗した場合は、作成した記事の全文（frontmatter を含む）を報告に
@@ -274,6 +279,7 @@ Claude の cloud routines に登録しているプロンプトの原本。**ル�
 
 | 日付 | 内容 |
 |---|---|
+| 2026-10-15 | 日次の手順に 7-C（note 用の図解 `tools/make-infographic.mjs`）を追加し、完了時の報告に図解の結果とURL（`/info/<YYYY-MM-DD>.png`）を足した。ChatGPT で手作りしていた図解の置き換え。登録済みのルーティン（`trig_01YXGbBvr9ALLagKshTTcikj`）にも同じ文面を反映済み |
 | 2026-10-14 | 日次の手順2・3と公開の判定を直した。**`fetch-indicators.py` が Yahoo Finance からドル指数・日経225・日経VI・原油・Nasdaq・ダウの日足終値も出すようになり、その値は報道と食い違っても採る。**10/13・10/14 号はドル指数が報道の寄せ集めで割れて未確認になり、10/14 号は自動公開が止まった。**登録済みのルーティンの文面にも同じ変更を反映すること** |
 | 2026-10-06 | 公開の判定の「出所が食い違った」を、**同じ定義の値が割れて、どれかを載せた場合**に限った。初日の10/6号は、金の現物終値が決まらないこと（現物の日中値と先物の清算値が違う）を理由に下書きで止まり、人が 8:38 に公開した。金の終値は出所で割れるのが常で、「未確認」と書けているなら誤りではない。ルーティンにも反映済み |
 | 2026-10-05 | **日次を「条件を満たせば公開状態で push」に変えた。**開始は 8:00（公開は 8:15 前後）。公開の判定を `tools/publish-gate.py` と「公開の判定」節に置き、当てはまる号は従来どおり下書きで止める。`draft:` の行は手で書き換えさせない。完了報告の先頭に、公開したか止めたかを書かせる。名前は「TEITEN デイリーレポート（自動公開）」。週次は下書きのまま |
