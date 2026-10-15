@@ -144,6 +144,8 @@ python tools/new-weekly.py            # 週次の雛形。週番号と期間を�
 python tools/check-report.py          # 日次・週次の検査。エラーがあれば終了コード 1
 python tools/admin.py                 # ローカルの公開管理（127.0.0.1:4399）
 node  tools/check-html.mjs            # 出力HTMLに可視アスタリスクが無いか
+node  tools/make-thumb.mjs 2026-10-15        # note 用サムネイル → note/thumb_20261015.png
+node  tools/make-infographic.mjs 2026-10-15  # note 用の図解 → note/info_20261015.png（日次のみ）
 ```
 
 `check-html.mjs` は `postbuild` に繋いである。**警告のみでビルドは止めない**
